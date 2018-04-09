@@ -17,6 +17,7 @@ const (
 	LINE_TAG_CHIP = iota
 	LINE_TAG_REG
 	LINE_TAG_FIELD
+	LINE_TAG_COMMENT
 	LINE_TAG_OTHER
 )
 
@@ -101,6 +102,11 @@ func get_line_tag(line string) int {
 			fmt.Println("[ FIELD ]", line)
 		}
 		return LINE_TAG_FIELD
+	} else if strings.Contains(line, "#") {
+		if debug {
+			fmt.Println("[ COMET ]", line)
+		}
+		return LINE_TAG_COMMENT
 	} else {
 		if debug {
 			fmt.Println("[ OTHER ]", line)
@@ -203,6 +209,7 @@ func trim(reader *bufio.Reader) ([]item, error) {
 			fallthrough
 		case LINE_TAG_FIELD:
 			items = append(items, item{data: strings.TrimSpace(line), tag: t})
+		case LINE_TAG_COMMENT:
 		default:
 			if len(line) != 0 {
 				clog.Warn("Invalid Format:", line)

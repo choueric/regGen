@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	inputStr = `<chip>:si5324
+	inputStr = `# comment
+	<chip>:si5324
 	<REG>[Control]: 0
 	BYPASS_REG: 1
 	CKOUT_ALWAYS_ON: 5
