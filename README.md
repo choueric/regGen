@@ -34,6 +34,7 @@ fields.
 The content of `input.regs` is:
 
 ```
+# si5324 is a clock generator
 <chip>:si5324
 
 <REG>[Control]: 0
@@ -76,6 +77,7 @@ It contains two types of field: `bit` and `mask`.
 The above example shows the input file's basic format which contains only a few
 keywords and follows simple and loose rules. All keywords are case-insensitive.
 
+- `#`: A line will be treated as comment line if containing `#`.
 - `<chip>:si5324`: `<chip>` specify the chip's name and is optional
 - `<REG>[Control]: 0`: `<reg>` start a description of a register and its fields
   until a new `<reg>`. The register's name is `Control` and is optional. In this
