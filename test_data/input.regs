@@ -1,0 +1,13 @@
+<chip>:si5324
+
+<REG>[Control]: 0
+	BYPASS_REG: 1
+	CKOUT_ALWAYS_ON: 5
+	FREE_RUN: 7 - 6 
+
+<REG>: 1
+  ck_prior1 : 0-1 
+  ck_prior2; 2-3
+
+<REG>: 0x10
+BWSEL_REG: 4-7
