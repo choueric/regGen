@@ -25,7 +25,8 @@ func formatToC(rm *regMap, w io.Writer) {
 	fmt.Fprintf(w, "#define BIT(x) (1 << (x))\n"+
 		"#define MASK(a, b) (((uint8_t)-1 >> (7-(b))) & ~((1U<<(a))-1))\n")
 	for _, r := range rm.regs {
-		fmt.Fprintf(w, "\n#define REG_%s %#x\n", strings.ToUpper(r.name), r.offset)
+		fmt.Fprintf(w, "\n#define REG_%s %#x // %d\n", strings.ToUpper(r.name),
+			r.offset, r.offset)
 		for _, f := range r.fields {
 			if f.start == f.end {
 				fmt.Fprintf(w, "\t#define REG_%s_BIT BIT(%d)\n",
