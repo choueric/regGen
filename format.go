@@ -22,12 +22,31 @@ const cHeader = `#pragma once
 #define MASK(a, b) (((uint8_t)-1 >> (7-(b))) & ~((1U<<(a))-1))
 `
 
-/*
-#define REG_0 0x0
-	#define REG_FREE_RUN_BIT BIT(1)
-	#define REG_CKOUT_ALWARYS_ON_BIT BIT(5)
-	#define REG_CKSEL_MSK MASK(6, 7)
-*/
+func cfmtOutputMaskField(w io.Writer, f *field, n string) {
+	// mask
+	fmt.Fprintf(w, "\t#define REG_%s_MSK MASK(%d, %d)\n", n, f.start, f.end)
+
+	// val
+	if f.start == 0 && f.end == 7 {
+		fmt.Fprintf(w, "\t#define REG_%s_VAL(rv) (rv)\n", n)
+	} else if f.start == 0 {
+		fmt.Fprintf(w, "\t#define REG_%s_VAL(rv) ((rv) & REG_%s_MSK)\n", n, n)
+	} else {
+		fmt.Fprintf(w, "\t#define REG_%s_VAL(rv) (((rv) & REG_%s_MSK) >> %d)\n",
+			n, n, f.start)
+	}
+
+	// shift
+	if f.start == 0 && f.end == 7 {
+		fmt.Fprintf(w, "\t#define REG_%s_SFT(v) (v)\n", n)
+	} else if f.start == 0 {
+		fmt.Fprintf(w, "\t#define REG_%s_SFT(v) ((v) & REG_%s_MSK)\n", n, n)
+	} else {
+		fmt.Fprintf(w, "\t#define REG_%s_SFT(v) (((v) & REG_%s_MSK) << %d)\n",
+			n, n, f.start)
+	}
+}
+
 func formatToC(rm *regMap, w io.Writer) {
 	fmt.Fprintf(w, cHeader)
 	if rm.chip != "" {
@@ -37,12 +56,11 @@ func formatToC(rm *regMap, w io.Writer) {
 		fmt.Fprintf(w, "\n#define REG_%s %#x // %d\n", strings.ToUpper(r.name),
 			r.offset, r.offset)
 		for _, f := range r.fields {
+			name := strings.ToUpper(f.name)
 			if f.start == f.end {
-				fmt.Fprintf(w, "\t#define REG_%s_BIT BIT(%d)\n",
-					strings.ToUpper(f.name), f.start)
+				fmt.Fprintf(w, "\t#define REG_%s_BIT BIT(%d)\n", name, f.start)
 			} else {
-				fmt.Fprintf(w, "\t#define REG_%s_MSK MASK(%d, %d)\n",
-					strings.ToUpper(f.name), f.start, f.end)
+				cfmtOutputMaskField(w, f, name)
 			}
 		}
 	}
