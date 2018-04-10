@@ -2,26 +2,31 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/choueric/clog"
 )
 
 var (
-	input  string
-	debug  bool
-	format string
+	input      string
+	debug      bool
+	format     string
+	version    = "0.0.1"
+	BUILD_INFO = ""
 )
 
 func main() {
 	flag.BoolVar(&debug, "d", false, "enable debug")
 	flag.StringVar(&input, "i", "input.regs", "input file.")
 	flag.StringVar(&format, "f", "c", "output format type. [c]")
-	flag.Parse()
-	if len(os.Args) == 2 && (os.Args[1] == "help" || os.Args[1] == "-h") {
-		flag.Usage()
-		return
+
+	defUsage := flag.Usage
+	flag.Usage = func() {
+		fmt.Println("version:", version, BUILD_INFO)
+		defUsage()
 	}
+	flag.Parse()
 
 	if debug {
 		clog.Println(input)
