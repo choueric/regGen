@@ -1,0 +1,189 @@
+# refer to https://www.silabs.com/Support%20Documents/TechnicalDocs/Si5324.pdf
+
+<chip>: si5324
+
+<reg>: 0
+bypass_reg: 1
+ckout_always_on: 5
+free_run: 7-6
+
+<reg>: 1
+ck_prior1: 0-1 
+ck_prior2: 2-3
+
+<reg>: 2
+bwsel_reg: 4-7
+
+<reg>: 3
+sq_ical: 4
+dhold: 5
+cksel_reg: 6-7
+
+<reg>: 4
+hist_del: 0-4
+autosel_reg: 6-7
+
+<REG>: 5
+icmos: 6-7
+
+<REG>: 6
+sfout1_reg: 0-2
+sfout2_reg: 3-5
+
+<REG>: 7
+fosrefsel: 0-3
+
+<REG>: 8
+hlog_1:4-5
+hlog_2: 6-7
+
+<REG>: 9
+hist_avg: 3-7
+
+<REG>: 10
+dsbl1_reg: 2
+dsbl2_reg: 3
+
+<REG>: 11
+pd_ck1: 0
+pd_ck2: 1
+
+<REG>: 19
+lockt : 0-2
+VALTIME: 4-3
+FOS_THR: 6-5
+FOS_EN: 7
+
+<REG>: 20
+INT_PIN: 0
+LOL_PIN: 1
+CK1_BAD_PIN: 2
+CK2_BAD_PIN: 3
+
+<REG>: 21
+CKSEL_PIN: 0
+CK1_ACTV_PIN: 1
+
+<REG>: 22
+INT_POL: 0
+LOL_POL: 1
+CK_BAD_POL: 2
+CK_ACTV_ POL: 3
+
+<REG>: 23
+los2_msk: 2
+los1_msk: 1
+losx_msk: 0
+
+<REG>: 24
+FOS2_MSK: 2
+FOS1_MSK: 1
+LOL_MSK: 0
+
+<REG>: 25
+N1_HS: 7-5
+
+<REG>: 31
+NC1_LS_H: 0-3
+
+<REG>: 32
+NC1_LS_M: 0-7
+
+<REG>: 33
+NC1_LS_L: 0-7
+
+<REG>: 34
+NC2_LS_H: 0-3
+
+<REG>: 35
+NC2_LS_M: 0-7
+
+<REG>: 36
+NC2_LS_L: 0-7
+
+<REG>: 40
+N2_HS: 7-5
+N2_LS_H: 3-0
+
+<REG>: 41
+N2_LS_M: 0-7
+
+<REG>: 42
+N2_LS_L: 0-7
+
+<REG>: 43
+N31_H: 2-0
+
+<REG>: 44
+N31_M: 0-7
+
+<REG>: 45
+N31_L: 7-0
+
+<REG>: 46
+N32_H: 2-0
+
+<REG>: 47
+N32_M: 0-7
+
+<REG>: 48
+N32_L: 0-7
+
+<REG>: 55
+CLKIN2RATE: 5-3
+CLKIN1RATE: 2-0
+
+<REG>: 128
+CK2_ACTV_REG: 1
+CK1_ACTV_REG: 0
+
+<REG>: 129
+LOS2_INT: 2
+LOS1_INT: 1
+LOSX_INT: 0
+
+<REG>: 130
+DIGHOLDVALID: 6
+FOS2_INT: 2
+FOS1_INT: 1
+LOL_INT: 0
+
+<REG>: 131
+LOS2_FLG: 2
+LOS1_FLG: 1
+LOSX_FLG: 0
+
+<REG>: 132
+FOS2_FLG: 3
+FOS1_FLG: 2
+LOL_FLG: 1
+
+<REG>: 134
+PARTNUM_RO_H: 0-7
+
+<REG>: 135
+PARTNUM_RO_L: 7-4
+REVID_RO: 3-0
+
+<REG>: 136
+RST_REG: 7
+ICAL: 6
+
+<REG>: 137
+FASTLOCK: 0
+
+<REG>: 138
+LOS2_EN_H: 1
+LOS1_EN_H: 0
+
+<REG>: 139
+LOS2_EN_L: 5
+LOS1_EN_L: 4
+FOS2_EN: 1
+FOS1_EN: 0
+
+<REG>: 142
+INDEPENDENTSKEW1: 7-0
+
+<REG>: 143
+INDEPENDENTSKEW2: 7-0
