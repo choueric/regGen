@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -97,21 +98,23 @@ func get_line_tag(line string) int {
 			fmt.Println("[  REG  ]", line)
 		}
 		return LINE_TAG_REG
-	} else if strings.Contains(line, ":") {
+	} else if m, _ := regexp.MatchString(`\s*#`, line); m {
 		if debug {
-			fmt.Println("[ FIELD ]", line)
-		}
-		return LINE_TAG_FIELD
-	} else if strings.Contains(line, "#") {
-		if debug {
-			fmt.Println("[ COMET ]", line)
+			fmt.Println("[ COMNT ]", line)
 		}
 		return LINE_TAG_COMMENT
 	} else {
-		if debug {
-			fmt.Println("[ OTHER ]", line)
+		if strings.Contains(line, ":") {
+			if debug {
+				fmt.Println("[ FIELD ]", line)
+			}
+			return LINE_TAG_FIELD
+		} else {
+			if debug {
+				fmt.Println("[ OTHER ]", line)
+			}
+			return LINE_TAG_OTHER
 		}
-		return LINE_TAG_OTHER
 	}
 }
 

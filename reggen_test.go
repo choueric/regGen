@@ -10,6 +10,8 @@ import (
 
 const (
 	inputStr = `# comment
+	# see http://test.com
+	# ###
 	<chip>:si5324
 	<REG>[Control]: 0
 	BYPASS_REG: 1
