@@ -12,6 +12,16 @@ var outputFormat = map[string]formatFunc{
 	"c": formatToC,
 }
 
+const cHeader = `#pragma once
+
+#ifndef BIT
+#define BIT(x) (1 << (x))
+#endif
+
+// ONLY for _8bit-width_ register
+#define MASK(a, b) (((uint8_t)-1 >> (7-(b))) & ~((1U<<(a))-1))
+`
+
 /*
 #define REG_0 0x0
 	#define REG_FREE_RUN_BIT BIT(1)
@@ -19,11 +29,10 @@ var outputFormat = map[string]formatFunc{
 	#define REG_CKSEL_MSK MASK(6, 7)
 */
 func formatToC(rm *regMap, w io.Writer) {
+	fmt.Fprintf(w, cHeader)
 	if rm.chip != "" {
-		fmt.Fprintf(w, "// Registers of %s\n", rm.chip)
+		fmt.Fprintf(w, "\n// Registers of %s\n", rm.chip)
 	}
-	fmt.Fprintf(w, "#define BIT(x) (1 << (x))\n"+
-		"#define MASK(a, b) (((uint8_t)-1 >> (7-(b))) & ~((1U<<(a))-1))\n")
 	for _, r := range rm.regs {
 		fmt.Fprintf(w, "\n#define REG_%s %#x // %d\n", strings.ToUpper(r.name),
 			r.offset, r.offset)
