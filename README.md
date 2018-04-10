@@ -83,15 +83,6 @@ And the output of C format will be:
 
 ```
 
-It can handle two types of field: `bit` and `mask`:
-- for `bit` type, it only generates one single macro `REG_XXX_BIT`
-- for `mask` type, it outputs macros below:
-	- `REG_XXX_MSK`: the mask for this field, for example `0x18` for `3-4`.
-	- `REG_XXX_VAL(rv)`: this macro can get this field's value from register 
-	  value `rv`. For example, `REG_XXX_VAL(0x10) = 2` for `3-4`.
-	- `REG_XXX_SFT(v)`: it shifts the field's value `v` to the correct offset.
-	  For example, `REG_XXX_SFT(3) = 0x18` for `3-4`.
-
 # input format
 
 The above example shows the input file's basic format which contains only a few
@@ -119,5 +110,15 @@ A more formal sepcification is like:
 
 # output format
 
-Right now, only output of C format is supported. These definitions are outputed
-as macros, so the names of registers and fields are capitalized.
+Right now, the only one output format is the C format which uses `#define`
+macros to represent all registers and fields and capitalize all their names.
+
+It can handle two types of field: `bit` and `mask`:
+- for `bit` type, it only generates one single macro `REG_XXX_BIT`
+- for `mask` type, it outputs macros below:
+	- `REG_XXX_MSK`: the mask for this field. For example, `REG_XXX_MSK = 0x18`
+	  for `3-4`.
+	- `REG_XXX_VAL(rv)`: this macro can get this field's value from register
+	  value `rv`. For example, `REG_XXX_VAL(0x10) = 2` for `3-4`.
+	- `REG_XXX_SFT(v)`: it shifts the field's value `v` to the correct offset.
+	  For example, `REG_XXX_SFT(1) = 0x08` for `3-4`.
