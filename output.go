@@ -46,7 +46,9 @@ func cfmtOutputMaskField(w io.Writer, f *field, n string) {
 		fmt.Fprintf(w, "\t#define REG_%s_SFT(v) (((v) & REG_%s_MSK) << %d)\n",
 			n, n, f.start)
 	}
+}
 
+func cfmtOputputValues(w io.Writer, f *field, n string) {
 	// values
 	if len(f.valData) != 0 {
 		for i, v := range f.valData {
@@ -72,6 +74,7 @@ func formatToC(rm *regMap, w io.Writer) {
 			} else {
 				cfmtOutputMaskField(w, f, name)
 			}
+			cfmtOputputValues(w, f, name)
 		}
 	}
 }
