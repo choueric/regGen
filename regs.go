@@ -128,7 +128,7 @@ func newItemByStr(line string) (i *item, err error) {
 func processChip(line string) (string, error) {
 	strs := strings.Split(line, ":")
 	if len(strs) != 2 {
-		return "", errors.New("Invalid Format: " + line)
+		clog.Fatal("Invalid Format: [" + line + "]")
 	}
 	return strings.TrimSpace(strs[1]), nil
 }
@@ -137,7 +137,7 @@ func processReg(line string) (*reg, error) {
 	r := &reg{}
 	strs := strings.Split(line, ":")
 	if len(strs) != 2 {
-		return nil, errors.New("Invalid Format: " + line)
+		clog.Fatal("Invalid Format: [" + line + "]")
 	} else {
 		offset, err := strconv.ParseInt(strings.TrimSpace(strs[1]), 0, 64)
 		if err != nil {
