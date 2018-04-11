@@ -88,24 +88,75 @@ And the output of C format will be:
 The above example shows the input file's basic format which contains only a few
 keywords and follows simple and loose rules. All keywords are case-insensitive.
 
-- `#`: A line will be treated as comment line if containing `#`.
-- `<chip>:si5324`: `<chip>` specify the chip's name and is optional
-- `<REG>[Control]: 0`: `<reg>` start a description of a register and its fields
-  until a new `<reg>`. The register's name is `Control` and is optional. In this
-  case, the offset will be its name.
-- `ck_prior1 : 0-1`, `CKOUT_ALWAYS_ON: 5`: The lines below `<reg>` define the
-  fields in the format `name: offset`. It doesn't matter to indent or not.
-  The offset are either bit or range which use `-` to connect. The start bit and
-  end bit can in either sides of `-` due to the process of correction in program.
+- `COMMENT`: A line is treated as comment line if starting with `#`.
   
-A more formal sepcification is like:
-```
-<chip>: {chip_name}
+  Example: `# si5324 is a clock generator`.
+- `CHIP`: Specify the chip's name. It is optional and name is empty.
+  Example: `<chip>:si5324`, where `si5324` is the name.
+  
+- `REG`: : It defines the name (optional) and offset of a register and generally
+  followed with serveral `FIELD` lines which defines this register's fields.
+  
+  Example: `<REG>[Control]: 0`, where the register's name is `Control` and offset is 0.
+  
+- `FIELD`: As says above, `FIELD` lines contains information of a register's
+  filed, including name, offset and values (optional) in the format of
+  `name: offset (value: valueName,)` that contains two parts. The `name-offset`
+  part is mandatory contrasting to the `values` part. Below explains more details
+  about `FIELD` line.
+  
+  Example: `ck_prior1 : 0-1`, where the field's name is `ck_prior1`, offset
+  range is `0-1` and there is no `values` part.
+  
+## `name-offset` part
 
-<reg>[{reg_name}]:{offset}
-{filed_1}: {bit}
-{filed_2}: {start_bit}-{end_bit}
-{filed_3}: {end_bit}-{start_bit}
+This part of `FIELD` line contains contains field's name and offset. The offset
+are either bit or range which use `-` to connect. The start bit and end bit can
+in either sides of `-`.
+  
+## `values` part
+
+This part of `FIELD` line is optional and gives the value range this field can
+have, which is usually used when the field's offset is not only one bit.
+
+Embraced by `(` and `)`, the values are paired with `:`, where the value number
+is at left and value name right. Value pairs are separated with `,`.
+
+For example, the chip spec have one filed like:
+
+```
+4:3 | VALTIME[2]
+00: 2ms
+01: 100ms
+10: 200ms
+11: 13 seconds
+```
+
+Then the `FIELD` line should be one of lines below:
+```
+VALTIME: 4-3 (0b00: 2ms, 0b01: 100ms, 0b10: 200ms, 0b11: 13s)
+VALTIME: 4-3 (0: 2ms, 1: 100ms, 2: 200ms, 3: 13s)
+```
+
+As the example shows, the value number can be decimal and binary. Actually, it
+support four formats:
+
+- dec, like 10 = 10
+- bin, like 0b11 = 3
+- oct, like 012 = 10
+- hex, like 0x1f = 31
+
+## spec
+
+A formal-like sepcification is:
+
+```
+<chip>: chipName
+
+<reg>[regName]: offset
+filed_1: bit
+filed_2: startBit - endBit
+filed_3: endBit - startBit (val1: val1Name, val2: val2Name)
 ```
 
 # output format
@@ -113,12 +164,21 @@ A more formal sepcification is like:
 Right now, the only one output format is the C format which uses `#define`
 macros to represent all registers and fields and capitalize all their names.
 
-It can handle two types of field: `bit` and `mask`:
+It handle two types of field: `bit` and `mask`:
+The output formats for each type of `FIELD` line are different:
 - for `bit` type, it only generates one single macro `REG_XXX_BIT`
-- for `mask` type, it outputs macros below:
+- for `range` type, it outputs macros below:
 	- `REG_XXX_MSK`: the mask for this field. For example, `REG_XXX_MSK = 0x18`
 	  for `3-4`.
 	- `REG_XXX_VAL(rv)`: this macro can get this field's value from register
 	  value `rv`. For example, `REG_XXX_VAL(0x10) = 2` for `3-4`.
 	- `REG_XXX_SFT(v)`: it shifts the field's value `v` to the correct offset.
 	  For example, `REG_XXX_SFT(1) = 0x08` for `3-4`.
+	- `REG_XXX_VALNAME VALNUM`: if the line contains `values` part. In the case
+	  of the VALTIME example above, the output is:
+	  ```
+	  #define REG_VALTIME_2MS 	0 	// 0b0	0x0
+	  #define REG_VALTIME_100MS 	1 	// 0b1	0x1
+	  #define REG_VALTIME_200MS 	2 	// 0b10	0x2
+	  #define REG_VALTIME_13S 	3 	// 0b11	0x3
+	  ```
