@@ -71,6 +71,7 @@ func formatToC(rm *regMap, w io.Writer) {
 			name := strings.ToUpper(f.name)
 			if f.start == f.end {
 				fmt.Fprintf(w, "\t#define REG_%s_BIT BIT(%d)\n", name, f.start)
+				fmt.Fprintf(w, "\t#define REG_%s_POS %d\n", name, f.start)
 			} else {
 				cfmtOutputMaskField(w, f, name)
 			}
