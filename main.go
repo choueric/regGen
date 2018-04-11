@@ -29,6 +29,7 @@ func main() {
 	flag.Parse()
 
 	if debug {
+		clog.SetFlags(clog.Lshortfile | clog.Lcolor)
 		clog.Println(input)
 	}
 
