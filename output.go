@@ -24,6 +24,10 @@ const cHeader = `#pragma once
 `
 
 func cfmtOutputMaskField(w io.Writer, f *field, n string) {
+	// start & end
+	fmt.Fprintf(w, "\t#define REG_%s_STR %d\n", n, f.start)
+	fmt.Fprintf(w, "\t#define REG_%s_END %d\n", n, f.end)
+
 	// mask
 	fmt.Fprintf(w, "\t#define REG_%s_MSK MASK(%d, %d)\n", n, f.start, f.end)
 
