@@ -15,27 +15,45 @@ import (
 )
 
 const (
-	LINE_TAG_CHIP = iota
-	LINE_TAG_REG
-	LINE_TAG_FIELD
-	LINE_TAG_COMMENT
-	LINE_TAG_OTHER
+	TAG_CHIP = iota
+	TAG_REG
+	TAG_FIELD
+	TAG_COMMENT
+	TAG_OTHER
 )
 
 type item struct {
-	data string
-	tag  int
+	tag         int
+	data        string
+	fieldValStr string // only for filed line
 }
 
-func printTrimItems(w io.Writer, items []item) {
+func printRawLine(w io.Writer, tag int, line string) {
+	switch tag {
+	case TAG_CHIP:
+		fmt.Println("[  CHIP ]", line)
+	case TAG_REG:
+		fmt.Println("[  REG  ]", line)
+	case TAG_COMMENT:
+		fmt.Println("[ COMNT ]", line)
+	case TAG_FIELD:
+		fmt.Println("[ FIELD ]", line)
+	case TAG_OTHER:
+		fmt.Println("[ OTHER ]", line)
+	default:
+		clog.Fatal("Unkonw type: " + line)
+	}
+}
+
+func printTrimItems(w io.Writer, items []*item) {
 	for _, i := range items {
 		switch i.tag {
-		case LINE_TAG_CHIP:
+		case TAG_CHIP:
 			fmt.Fprintln(w, "[  CHIP ]", i.data)
-		case LINE_TAG_REG:
+		case TAG_REG:
 			fmt.Fprintln(w, "[  REG  ]", i.data)
-		case LINE_TAG_FIELD:
-			fmt.Fprintln(w, "[ FIELD ]", i.data)
+		case TAG_FIELD:
+			fmt.Fprintf(w, "[ FIELD ] %s (%s)\n", i.data, i.fieldValStr)
 		}
 	}
 }
@@ -77,35 +95,34 @@ func readLine(r *bufio.Reader) (string, error) {
 	return str, nil
 }
 
-func get_line_tag(line string) int {
-	if strings.Contains(line, "<CHIP>") || strings.Contains(line, "<chip>") {
-		if debug {
-			fmt.Println("[  CHIP ]", line)
-		}
-		return LINE_TAG_CHIP
-	} else if strings.Contains(line, "<REG>") || strings.Contains(line, "<reg>") {
-		if debug {
-			fmt.Println("[  REG  ]", line)
-		}
-		return LINE_TAG_REG
-	} else if m, _ := regexp.MatchString(`\s*#`, line); m {
-		if debug {
-			fmt.Println("[ COMNT ]", line)
-		}
-		return LINE_TAG_COMMENT
+func newItemByStr(line string) (i *item, err error) {
+	sLine := strings.TrimSpace(line)
+	var tag int
+	if strings.Contains(sLine, "<CHIP>") || strings.Contains(sLine, "<chip>") {
+		tag = TAG_CHIP
+		i = &item{tag: TAG_CHIP, data: sLine}
+	} else if strings.Contains(sLine, "<REG>") || strings.Contains(sLine, "<reg>") {
+		tag = TAG_REG
+		i = &item{tag: TAG_REG, data: sLine}
+	} else if m, _ := regexp.MatchString(`\s*#`, sLine); m {
+		tag = TAG_COMMENT
 	} else {
-		if strings.Contains(line, ":") {
-			if debug {
-				fmt.Println("[ FIELD ]", line)
-			}
-			return LINE_TAG_FIELD
+		if strs, ok := validField(sLine); ok {
+			tag = TAG_FIELD
+			i = &item{tag: TAG_FIELD, data: strs[0], fieldValStr: strs[1]}
 		} else {
-			if debug {
-				fmt.Println("[ OTHER ]", line)
+			tag = TAG_OTHER
+			if len(line) != 0 {
+				clog.Fatal("Invalid Format: [" + line + "]")
 			}
-			return LINE_TAG_OTHER
 		}
 	}
+
+	if debug {
+		printRawLine(os.Stdout, tag, line)
+	}
+
+	return
 }
 
 func processChip(line string) (string, error) {
@@ -140,8 +157,8 @@ func processReg(line string) (*reg, error) {
 	return r, nil
 }
 
-func trim(reader *bufio.Reader) ([]item, error) {
-	items := make([]item, 0)
+func trim(reader *bufio.Reader) ([]*item, error) {
+	items := make([]*item, 0)
 	for {
 		line, err := readLine(reader)
 		if err != nil {
@@ -152,20 +169,13 @@ func trim(reader *bufio.Reader) ([]item, error) {
 			}
 		}
 
-		t := get_line_tag(line)
-		switch t {
-		case LINE_TAG_CHIP:
-			fallthrough
-		case LINE_TAG_REG:
-			fallthrough
-		case LINE_TAG_FIELD:
-			items = append(items, item{data: strings.TrimSpace(line), tag: t})
-		case LINE_TAG_COMMENT:
-		default:
-			if len(line) != 0 {
-				clog.Warn("Invalid Format:", line)
+		i, err := newItemByStr(line)
+		if err != nil {
+			clog.Fatal(err)
+		} else {
+			if i != nil {
+				items = append(items, i)
 			}
-
 		}
 	}
 
@@ -177,28 +187,28 @@ func trim(reader *bufio.Reader) ([]item, error) {
 	return items, nil
 }
 
-func parse(rm *regMap, items []item) error {
+func parse(rm *regMap, items []*item) error {
 	var curReg *reg
 	for _, item := range items {
 		switch item.tag {
-		case LINE_TAG_CHIP:
+		case TAG_CHIP:
 			chip, err := processChip(item.data)
 			if err != nil {
 				return err
 			}
 			rm.chip = chip
-		case LINE_TAG_REG:
+		case TAG_REG:
 			r, err := processReg(item.data)
 			if err != nil {
 				return err
 			}
 			rm.regs = append(rm.regs, r)
 			curReg = r
-		case LINE_TAG_FIELD:
+		case TAG_FIELD:
 			if curReg == nil {
-				return errors.New("Invalid Format: no <REG> at start")
+				clog.Fatal("Invalid Format: no <REG> at start")
 			}
-			f, err := processFiled(item.data)
+			f, err := processFiled(item.data, item.fieldValStr)
 			if err != nil {
 				return err
 			}
