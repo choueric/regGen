@@ -5,7 +5,7 @@
 <reg>: 0
 bypass_reg: 1
 ckout_always_on: 5
-free_run: 7-6
+free_run: 6
 
 <reg>: 1
 ck_prior1: 0-1 
@@ -31,7 +31,7 @@ sfout1_reg: 0-2
 sfout2_reg: 3-5
 
 <REG>: 7
-fosrefsel: 0-3
+fosrefsel: 0-2
 
 <REG>: 8
 hlog_1:4-5
@@ -50,7 +50,7 @@ pd_ck2: 1
 
 <REG>: 19
 lockt : 0-2
-VALTIME: 4-3
+VALTIME: 4-3 (0b00: 2ms, 0b01: 100ms, 0b10: 200ms, 0b11: 13s)
 FOS_THR: 6-5
 FOS_EN: 7
 
