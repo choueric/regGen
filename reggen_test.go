@@ -4,42 +4,43 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"testing"
+
+	"github.com/choueric/clog"
 )
 
 const (
-	inputStr = `# comment
-	# see http://test.com
-	# ###
-	<chip>:si5324
-	<REG>[Control]: 0
-	BYPASS_REG: 1
-	CKOUT_ALWAYS_ON: 5
-	FREE_RUN: 7 - 6 
-
-<REG>: 1
-  ck_prior1 : 0-1 
-
-<REG>: 0x10
-BWSEL_REG: 4-7`
+	// Trimmed String
 	trimedStr = `[  CHIP ] <chip>:si5324
 [  REG  ] <REG>[Control]: 0
 [ FIELD ] BYPASS_REG: 1 ()
-[ FIELD ] CKOUT_ALWAYS_ON: 5 ()
 [ FIELD ] FREE_RUN: 7 - 6 ()
-[  REG  ] <REG>: 1
 [ FIELD ] ck_prior1 : 0-1 ()
 [  REG  ] <REG>: 0x10
+[ FIELD ] BWSEL_REG: 4-7 ()
+[  REG  ] <REG>[field_vals]: 0x11
+[ FIELD ] fos: 5-6 (0:fos_0, 3:fos_3)
+[ FIELD ] VALTIME: 4 -  3 (0b00:    0ms, 0b01:    1ms, 0b10: 2ms, 0b11: 3ms)
+[ FIELD ] lockt: 0-2 (0x0: 0t, 0xa: 5t)
+[  REG  ] <reg>: 0x12
+[ FIELD ] single: 2-3 (2: two)
 `
+	// Parsed String
 	parsedStr = `CHIP: "si5324"
 "Control", 0x0
-    BYPASS_REG: [1:1]
-    CKOUT_ALWAYS_ON: [5:5]
-    FREE_RUN: [6:7]
-"1", 0x1
-    ck_prior1: [0:1]
+    BYPASS_REG: [1:1] ()
+    FREE_RUN: [6:7] ()
+    ck_prior1: [0:1] ()
 "16", 0x10
+    BWSEL_REG: [4:7] ()
+"field_vals", 0x11
+    fos: [5:6] (0: fos_0, 3: fos_3, )
+    VALTIME: [3:4] (0: 0ms, 1: 1ms, 2: 2ms, 3: 3ms, )
+    lockt: [0:2] (0: 0t, 10: 5t, )
+"18", 0x12
+    single: [2:3] (2: two, )
 `
 	formatCStr = `#pragma once
 
@@ -54,19 +55,54 @@ BWSEL_REG: 4-7`
 
 #define REG_CONTROL 0x0 // 0
 	#define REG_BYPASS_REG_BIT BIT(1)
-	#define REG_CKOUT_ALWAYS_ON_BIT BIT(5)
 	#define REG_FREE_RUN_MSK MASK(6, 7)
 	#define REG_FREE_RUN_VAL(rv) (((rv) & REG_FREE_RUN_MSK) >> 6)
 	#define REG_FREE_RUN_SFT(v) (((v) & REG_FREE_RUN_MSK) << 6)
-
-#define REG_1 0x1 // 1
 	#define REG_CK_PRIOR1_MSK MASK(0, 1)
 	#define REG_CK_PRIOR1_VAL(rv) ((rv) & REG_CK_PRIOR1_MSK)
 	#define REG_CK_PRIOR1_SFT(v) ((v) & REG_CK_PRIOR1_MSK)
 
 #define REG_16 0x10 // 16
+	#define REG_BWSEL_REG_MSK MASK(4, 7)
+	#define REG_BWSEL_REG_VAL(rv) (((rv) & REG_BWSEL_REG_MSK) >> 4)
+	#define REG_BWSEL_REG_SFT(v) (((v) & REG_BWSEL_REG_MSK) << 4)
+
+#define REG_FIELD_VALS 0x11 // 17
+	#define REG_FOS_MSK MASK(5, 6)
+	#define REG_FOS_VAL(rv) (((rv) & REG_FOS_MSK) >> 5)
+	#define REG_FOS_SFT(v) (((v) & REG_FOS_MSK) << 5)
+		#define REG_FOS_FOS_0 	0 	// 0b0	0x0
+		#define REG_FOS_FOS_3 	3 	// 0b11	0x3
+	#define REG_VALTIME_MSK MASK(3, 4)
+	#define REG_VALTIME_VAL(rv) (((rv) & REG_VALTIME_MSK) >> 3)
+	#define REG_VALTIME_SFT(v) (((v) & REG_VALTIME_MSK) << 3)
+		#define REG_VALTIME_0MS 	0 	// 0b0	0x0
+		#define REG_VALTIME_1MS 	1 	// 0b1	0x1
+		#define REG_VALTIME_2MS 	2 	// 0b10	0x2
+		#define REG_VALTIME_3MS 	3 	// 0b11	0x3
+	#define REG_LOCKT_MSK MASK(0, 2)
+	#define REG_LOCKT_VAL(rv) ((rv) & REG_LOCKT_MSK)
+	#define REG_LOCKT_SFT(v) ((v) & REG_LOCKT_MSK)
+		#define REG_LOCKT_0T 	0 	// 0b0	0x0
+		#define REG_LOCKT_5T 	10 	// 0b1010	0xa
+
+#define REG_18 0x12 // 18
+	#define REG_SINGLE_MSK MASK(2, 3)
+	#define REG_SINGLE_VAL(rv) (((rv) & REG_SINGLE_MSK) >> 2)
+	#define REG_SINGLE_SFT(v) (((v) & REG_SINGLE_MSK) << 2)
+		#define REG_SINGLE_TWO 	2 	// 0b10	0x2
 `
 )
+
+var inputStr string
+
+func init() {
+	data, err := ioutil.ReadFile("./chips/test.regs")
+	if err != nil {
+		clog.Fatal(err)
+	}
+	inputStr = string(data)
+}
 
 func print_string_mismatch(a, b []byte) {
 	if len(a) != len(b) {
