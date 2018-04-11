@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -250,18 +249,5 @@ func (rm *regMap) Load(filename string) error {
 		return err
 	}
 
-	return nil
-}
-
-func (rm *regMap) Output(w io.Writer, format string) error {
-	f, ok := outputFormat[format]
-	if !ok {
-		return errors.New("Invalid format: " + format)
-	}
-
-	if debug {
-		fmt.Println("----------------- format output ---------------")
-	}
-	f(rm, w)
 	return nil
 }

@@ -33,11 +33,19 @@ func main() {
 		clog.Println(input)
 	}
 
+	fmtFunc, ok := outputFormat[format]
+	if !ok {
+		clog.Fatal("Invalid format: " + format)
+	}
+
 	var regs regMap
 	err := regs.Load(input)
 	if err != nil {
 		clog.Fatal(err)
 	}
 
-	regs.Output(os.Stdout, format)
+	if debug {
+		fmt.Println("----------------- format output ---------------")
+	}
+	fmtFunc(&regs, os.Stdout)
 }
