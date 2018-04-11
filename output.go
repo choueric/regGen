@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 )
 
@@ -44,6 +45,15 @@ func cfmtOutputMaskField(w io.Writer, f *field, n string) {
 	} else {
 		fmt.Fprintf(w, "\t#define REG_%s_SFT(v) (((v) & REG_%s_MSK) << %d)\n",
 			n, n, f.start)
+	}
+
+	// values
+	if len(f.valData) != 0 {
+		for i, v := range f.valData {
+			bstr := strconv.FormatUint(uint64(v), 2)
+			fmt.Fprintf(w, "\t\t#define REG_%s_%s \t%d \t// 0b%s\t%#x\n",
+				n, strings.ToUpper(f.valName[i]), v, bstr, v)
+		}
 	}
 }
 
