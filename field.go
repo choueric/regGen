@@ -63,11 +63,6 @@ func validField(line string) ([]string, bool) {
 		m := regexp.MustCompile(`.*\((.+)\)`)
 		strs := m.FindStringSubmatch(line)
 		if len(strs) == 2 {
-			if debug {
-				for _, s := range strs {
-					fmt.Println("  ", s)
-				}
-			}
 			subs := strings.Split(line, "(")
 			return []string{strings.TrimSpace(subs[0]), strs[1]}, true
 		} else {
