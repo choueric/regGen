@@ -5,6 +5,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"text/tabwriter"
 )
 
 type formatFunc func(rm *regMap, w io.Writer)
@@ -57,13 +58,14 @@ func cfmtOputputValues(w io.Writer, f *field, n string) {
 	if len(f.valData) != 0 {
 		for i, v := range f.valData {
 			bstr := strconv.FormatUint(uint64(v), 2)
-			fmt.Fprintf(w, "\t\t#define REG_%s_%s \t%d \t// 0b%s\t%#x\n",
+			fmt.Fprintf(w, "\t\t#define REG_%s_%s\t%d\t// 0b%s\t%#x\n",
 				n, strings.ToUpper(f.valName[i]), v, bstr, v)
 		}
 	}
 }
 
-func formatToC(rm *regMap, w io.Writer) {
+func formatToC(rm *regMap, ow io.Writer) {
+	w := tabwriter.NewWriter(ow, 0, 4, 1, '\t', 0)
 	fmt.Fprintf(w, cHeader)
 	if rm.chip != "" {
 		fmt.Fprintf(w, "\n// Registers of %s\n", rm.chip)
@@ -82,4 +84,5 @@ func formatToC(rm *regMap, w io.Writer) {
 			cfmtOputputValues(w, f, name)
 		}
 	}
+	w.Flush()
 }
