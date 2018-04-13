@@ -43,6 +43,7 @@ const (
 "18", 0x12
     single: [2:3] (2: two, )
 `
+	// output C format string
 	formatCStr = `#pragma once
 
 #ifndef BIT
@@ -112,8 +113,9 @@ const (
 )
 
 var (
-	inputStr  string
-	debugTest bool
+	testSource string
+	testItems  []*lineItem
+	testDebug  bool
 )
 
 func init() {
@@ -121,16 +123,21 @@ func init() {
 	if err != nil {
 		clog.Fatal(err)
 	}
-	inputStr = string(data)
+	testSource = string(data)
 
-	flag.BoolVar(&debugTest, "d", false, "enable test debug")
+	flag.BoolVar(&testDebug, "d", false, "enable test debug")
 	flag.Parse()
+
+	testItems, err = trim(bufio.NewReader(strings.NewReader(testSource)))
+	if err != nil {
+		clog.Fatal(err)
+	}
 }
 
 func print_string_mismatch(a, b []byte) {
 	if len(a) != len(b) {
 		fmt.Println("length doesn't match:", len(a), len(b))
-		if debugTest {
+		if testDebug {
 			fmt.Println(string(a), "----------------------\n", string(b))
 		}
 		return
@@ -144,13 +151,9 @@ func print_string_mismatch(a, b []byte) {
 }
 
 func Test_trim(t *testing.T) {
-	items, err := trim(bufio.NewReader(strings.NewReader(inputStr)))
-	if err != nil {
-		t.Error(err)
-	}
-
+	// testItems is already got in init()
 	var result bytes.Buffer
-	printTrimItems(&result, items)
+	printTrimItems(&result, testItems)
 	if strings.Compare(result.String(), trimedStr) != 0 {
 		print_string_mismatch(result.Bytes(), []byte(trimedStr))
 		t.Error("trim fail!")
@@ -158,12 +161,7 @@ func Test_trim(t *testing.T) {
 }
 
 func Test_parse(t *testing.T) {
-	items, err := trim(bufio.NewReader(strings.NewReader(inputStr)))
-	if err != nil {
-		t.Error(err)
-	}
-
-	jar, err := parse(items)
+	jar, err := parse(testItems)
 	if err != nil {
 		t.Error(err)
 	}
@@ -177,12 +175,7 @@ func Test_parse(t *testing.T) {
 }
 
 func Test_formatToC(t *testing.T) {
-	items, err := trim(bufio.NewReader(strings.NewReader(inputStr)))
-	if err != nil {
-		t.Error(err)
-	}
-
-	jar, err := parse(items)
+	jar, err := parse(testItems)
 	if err != nil {
 		t.Error(err)
 	}
