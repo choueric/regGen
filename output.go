@@ -57,10 +57,10 @@ func cfmtOutputMaskField(w io.Writer, f *field, n string) {
 	if f.start == 0 && f.end == 7 {
 		fmt.Fprintf(w, "\t#define REG_%s_SFT(v) (v)\n", n)
 	} else if f.start == 0 {
-		fmt.Fprintf(w, "\t#define REG_%s_SFT(v) ((v) & REG_%s_MSK)\n", n, n)
+		fmt.Fprintf(w, "\t#define REG_%s_SFT(v) ((v) & MASK(0, %d))\n", n, f.end)
 	} else {
-		fmt.Fprintf(w, "\t#define REG_%s_SFT(v) (((v) & REG_%s_MSK) << %d)\n",
-			n, n, f.start)
+		fmt.Fprintf(w, "\t#define REG_%s_SFT(v) (((v) & MASK(0, %d)) << %d)\n",
+			n, f.end-f.start, f.start)
 	}
 }
 
