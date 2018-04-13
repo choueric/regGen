@@ -8,7 +8,7 @@ import (
 	"text/tabwriter"
 )
 
-type formatFunc func(rm *regMap, w io.Writer)
+type formatFunc func(jar *regJar, w io.Writer)
 
 var outputFormat = map[string]formatFunc{
 	"c": formatToC,
@@ -75,13 +75,13 @@ func cfmtOputputValues(w io.Writer, f *field, n string) {
 	}
 }
 
-func formatToC(rm *regMap, ow io.Writer) {
+func formatToC(jar *regJar, ow io.Writer) {
 	w := tabwriter.NewWriter(ow, 0, 4, 1, '\t', 0)
 	fmt.Fprintf(w, cHeader)
-	if rm.chip != "" {
-		fmt.Fprintf(w, "\n// Registers of %s\n", rm.chip)
+	if jar.chip != "" {
+		fmt.Fprintf(w, "\n// Registers of %s\n", jar.chip)
 	}
-	for _, r := range rm.regs {
+	for _, r := range jar.regs {
 		fmt.Fprintf(w, "\n#define REG_%s %#x // %d\n", strings.ToUpper(r.name),
 			r.offset, r.offset)
 		for _, f := range r.fields {

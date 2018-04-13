@@ -38,8 +38,7 @@ func main() {
 		clog.Fatal("Invalid format: " + format)
 	}
 
-	var regs regMap
-	err := regs.Load(input)
+	jar, err := regJarNew(input)
 	if err != nil {
 		clog.Fatal(err)
 	}
@@ -47,5 +46,5 @@ func main() {
 	if debug {
 		fmt.Println("----------------- format output ---------------")
 	}
-	fmtFunc(&regs, os.Stdout)
+	fmtFunc(jar, os.Stdout)
 }
