@@ -23,6 +23,17 @@ const cHeader = `#pragma once
 #define MASK(a, b) (((uint8_t)-1 >> (7-(b))) & ~((1U<<(a))-1))
 `
 
+func cfmtOutputBitField(w io.Writer, f *field, n string) {
+	p := f.start
+	fmt.Fprintf(w, "\t#define REG_%s_BIT BIT(%d)\n", n, p)
+	if p == 0 {
+		fmt.Fprintf(w, "\t#define REG_%s_VAL(rv) ((rv) & BIT(%d))\n", n, p)
+	} else {
+		fmt.Fprintf(w, "\t#define REG_%s_VAL(rv) (((rv) & BIT(%d)) >> %d)\n", n, p, p)
+	}
+	fmt.Fprintf(w, "\t#define REG_%s_POS %d\n", n, p)
+}
+
 func cfmtOutputMaskField(w io.Writer, f *field, n string) {
 	// start & end
 	fmt.Fprintf(w, "\t#define REG_%s_STR %d\n", n, f.start)
@@ -74,8 +85,7 @@ func formatToC(rm *regMap, w io.Writer) {
 		for _, f := range r.fields {
 			name := strings.ToUpper(f.name)
 			if f.start == f.end {
-				fmt.Fprintf(w, "\t#define REG_%s_BIT BIT(%d)\n", name, f.start)
-				fmt.Fprintf(w, "\t#define REG_%s_POS %d\n", name, f.start)
+				cfmtOutputBitField(w, f, name)
 			} else {
 				cfmtOutputMaskField(w, f, name)
 			}
