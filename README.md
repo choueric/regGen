@@ -34,20 +34,15 @@ fields.
 The content of `input.regs` is:
 
 ```
-# si5324 is a clock generator
-<chip>:si5324
+# This is a simple regs file
+<chip>:simpleChip
 
 <REG>[Control]: 0
-        BYPASS_REG: 1
-        CKOUT_ALWAYS_ON: 5
+        BYPASS: 1
         FREE_RUN: 7 - 6 
 
-<REG>: 1
-  ck_prior1 : 0-1 
-  ck_prior2; 2-3
-
-<REG>: 0x10
-BWSEL_REG: 4-7
+<REG>: 0x2
+type: 4-5 (0b00: client, 0x01: server, 2: route, 3: peer)
 ```
 
 And the output of C format will be:
@@ -62,25 +57,30 @@ And the output of C format will be:
 // ONLY for _8bit-width_ register
 #define MASK(a, b) (((uint8_t)-1 >> (7-(b))) & ~((1U<<(a))-1))
 
-// Registers of si5324
+// Registers of simpleChip
 
 #define REG_CONTROL 0x0 // 0
-	#define REG_BYPASS_REG_BIT BIT(1)
-	#define REG_CKOUT_ALWAYS_ON_BIT BIT(5)
+	#define REG_BYPASS_BIT BIT(1)
+	#define REG_BYPASS_POS 1
+	#define REG_BYPASS_VAL(rv) (((rv) & BIT(1)) >> 1)
+		#define REG_BYPASS_ENABLE	1	// 0b1	0x1
+		#define REG_BYPASS_DISABLE	0	// 0b0	0x0
+	#define REG_FREE_RUN_STR 6
+	#define REG_FREE_RUN_END 7
 	#define REG_FREE_RUN_MSK MASK(6, 7)
 	#define REG_FREE_RUN_VAL(rv) (((rv) & REG_FREE_RUN_MSK) >> 6)
-	#define REG_FREE_RUN_SFT(v) (((v) & REG_FREE_RUN_MSK) << 6)
+	#define REG_FREE_RUN_SFT(v) (((v) & MASK(0, 1)) << 6)
 
-#define REG_1 0x1 // 1
-	#define REG_CK_PRIOR1_MSK MASK(0, 1)
-	#define REG_CK_PRIOR1_VAL(rv) ((rv) & REG_CK_PRIOR1_MSK)
-	#define REG_CK_PRIOR1_SFT(v) ((v) & REG_CK_PRIOR1_MSK)
-
-#define REG_16 0x10 // 16
-	#define REG_BWSEL_REG_MSK MASK(4, 7)
-	#define REG_BWSEL_REG_VAL(rv) (((rv) & REG_BWSEL_REG_MSK) >> 4)
-	#define REG_BWSEL_REG_SFT(v) (((v) & REG_BWSEL_REG_MSK) << 4)
-
+#define REG_2 0x2 // 2
+	#define REG_TYPE_STR 4
+	#define REG_TYPE_END 5
+	#define REG_TYPE_MSK MASK(4, 5)
+	#define REG_TYPE_VAL(rv) (((rv) & REG_TYPE_MSK) >> 4)
+	#define REG_TYPE_SFT(v) (((v) & MASK(0, 1)) << 4)
+		#define REG_TYPE_CLIENT	0	// 0b0	0x0
+		#define REG_TYPE_SERVER	1	// 0b1	0x1
+		#define REG_TYPE_ROUTE	2	// 0b10	0x2
+		#define REG_TYPE_PEER	3	// 0b11	0x3
 ```
 
 # input format
@@ -89,8 +89,8 @@ The above example shows the input file's basic format which contains only a few
 keywords and follows simple and loose rules. All keywords are case-insensitive.
 
 - `COMMENT`: A line is treated as comment line if starting with `#`.
-  
   Example: `# si5324 is a clock generator`.
+
 - `CHIP`: Specify the chip's name. It is optional and name is empty.
   Example: `<chip>:si5324`, where `si5324` is the name.
   
@@ -164,21 +164,29 @@ filed_3: endBit - startBit (val1: val1Name, val2: val2Name)
 Right now, the only one output format is the C format which uses `#define`
 macros to represent all registers and fields and capitalize all their names.
 
-It handle two types of field: `bit` and `mask`:
-The output formats for each type of `FIELD` line are different:
-- for `bit` type, it only generates one single macro `REG_XXX_BIT`
-- for `range` type, it outputs macros below:
+It handle two types of field: `bit` and `range`. There are some common macros and
+some are not. The common macros are:
+
+- `REG_XXX_VAL(rv)`: For `bit` type, it gets the value of this filed, 1 or 0 of
+  course. For `range`, it can get this field's value from register value `rv`.
+  For example, `REG_XXX_VAL(0x10) = 2` for `3-4`.
+
+- `REG_XXX_VALNAME VALNUM`: It is often used for `range` type. As the above
+  example `type: 4-5 (0b00: client, 0x01: server, 2: route, 3: peer)`, the ouput
+  is:
+  ```
+		#define REG_TYPE_CLIENT	0	// 0b0	0x0
+		#define REG_TYPE_SERVER	1	// 0b1	0x1
+		#define REG_TYPE_ROUTE	2	// 0b10	0x2
+		#define REG_TYPE_PEER	3	// 0b11	0x3
+  ```
+
+- The macros only for `bit` type are:
+	- `REG_XXX_BIT`: i.e. BIT(n), n is the offset.
+	- `REG_XXX_POS`: it is the offset of this filed.
+
+- The macros only for `range` type are:
 	- `REG_XXX_MSK`: the mask for this field. For example, `REG_XXX_MSK = 0x18`
 	  for `3-4`.
-	- `REG_XXX_VAL(rv)`: this macro can get this field's value from register
-	  value `rv`. For example, `REG_XXX_VAL(0x10) = 2` for `3-4`.
 	- `REG_XXX_SFT(v)`: it shifts the field's value `v` to the correct offset.
 	  For example, `REG_XXX_SFT(1) = 0x08` for `3-4`.
-	- `REG_XXX_VALNAME VALNUM`: if the line contains `values` part. In the case
-	  of the VALTIME example above, the output is:
-	  ```
-	  #define REG_VALTIME_2MS 	0 	// 0b0	0x0
-	  #define REG_VALTIME_100MS 	1 	// 0b1	0x1
-	  #define REG_VALTIME_200MS 	2 	// 0b10	0x2
-	  #define REG_VALTIME_13S 	3 	// 0b11	0x3
-	  ```
