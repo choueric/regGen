@@ -14,7 +14,8 @@ var outputFormat = map[string]formatFunc{
 	"c": formatToC,
 }
 
-const cHeader = `#pragma once
+func cfmtOutputBanner(w io.Writer, jar *regJar) {
+	const cHeader = `#pragma once
 
 #ifndef BIT
 #define BIT(x) (1 << (x))
@@ -23,6 +24,17 @@ const cHeader = `#pragma once
 // ONLY for _8bit-width_ register
 #define MASK(a, b) (((uint8_t)-1 >> (7-(b))) & ~((1U<<(a))-1))
 `
+
+	fmt.Fprintf(w, cHeader)
+	if jar.chip != "" {
+		fmt.Fprintf(w, "\n// Registers of %s\n", jar.chip)
+	}
+}
+
+func cfmtOutputReg(w io.Writer, r *reg) {
+	n := strings.ToUpper(r.name)
+	fmt.Fprintf(w, "\n#define REG_%s %#x // %d\n", n, r.offset, r.offset)
+}
 
 func cfmtOutputBitField(w io.Writer, f *field, n string) {
 	p := f.start
@@ -77,13 +89,9 @@ func cfmtOputputValues(w io.Writer, f *field, n string) {
 
 func formatToC(jar *regJar, ow io.Writer) {
 	w := tabwriter.NewWriter(ow, 0, 4, 1, '\t', 0)
-	fmt.Fprintf(w, cHeader)
-	if jar.chip != "" {
-		fmt.Fprintf(w, "\n// Registers of %s\n", jar.chip)
-	}
+	cfmtOutputBanner(w, jar)
 	for _, r := range jar.regs {
-		fmt.Fprintf(w, "\n#define REG_%s %#x // %d\n", strings.ToUpper(r.name),
-			r.offset, r.offset)
+		cfmtOutputReg(w, r)
 		for _, f := range r.fields {
 			name := strings.ToUpper(f.name)
 			if f.start == f.end {
@@ -92,6 +100,7 @@ func formatToC(jar *regJar, ow io.Writer) {
 				cfmtOutputMaskField(w, f, name)
 			}
 			cfmtOputputValues(w, f, name)
+			w.Flush()
 		}
 	}
 	w.Flush()
