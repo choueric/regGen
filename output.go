@@ -39,12 +39,12 @@ func cfmtOutputReg(w io.Writer, r *reg) {
 func cfmtOutputBitField(w io.Writer, f *field, n string) {
 	p := f.start
 	fmt.Fprintf(w, "\t#define REG_%s_BIT BIT(%d)\n", n, p)
+	fmt.Fprintf(w, "\t#define REG_%s_POS %d\n", n, p)
 	if p == 0 {
 		fmt.Fprintf(w, "\t#define REG_%s_VAL(rv) ((rv) & BIT(%d))\n", n, p)
 	} else {
 		fmt.Fprintf(w, "\t#define REG_%s_VAL(rv) (((rv) & BIT(%d)) >> %d)\n", n, p, p)
 	}
-	fmt.Fprintf(w, "\t#define REG_%s_POS %d\n", n, p)
 }
 
 func cfmtOutputMaskField(w io.Writer, f *field, n string) {
