@@ -57,8 +57,8 @@ const (
 
 #define REG_CONTROL 0x0 // 0
 	#define REG_BYPASS_REG_BIT BIT(1)
-	#define REG_BYPASS_REG_VAL(rv) (((rv) & BIT(1)) >> 1)
 	#define REG_BYPASS_REG_POS 1
+	#define REG_BYPASS_REG_VAL(rv) (((rv) & BIT(1)) >> 1)
 	#define REG_FREE_RUN_STR 6
 	#define REG_FREE_RUN_END 7
 	#define REG_FREE_RUN_MSK MASK(6, 7)
