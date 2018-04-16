@@ -1,0 +1,9 @@
+# This is a simple regs file
+<chip>:simpleChip
+
+<REG>[Control]: 0
+        BYPASS: 1 (1: enable, 0: disable)
+        FREE_RUN: 7 - 6 
+
+<REG>: 0x2
+type: 4-5 (0b00: client, 0x01: server, 2: route, 3: peer)
