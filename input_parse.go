@@ -21,7 +21,7 @@ const (
 	TAG_OTHER
 )
 
-type lineItem struct {
+type tagItem struct {
 	tag         int
 	data        string
 	fieldValStr string // only for filed line
@@ -44,7 +44,7 @@ func printRawLine(w io.Writer, tag int, line string) {
 	}
 }
 
-func printTrimItems(w io.Writer, items []*lineItem) {
+func printTrimItems(w io.Writer, items []*tagItem) {
 	for _, i := range items {
 		switch i.tag {
 		case TAG_CHIP:
@@ -94,21 +94,21 @@ func readLine(r *bufio.Reader) (string, error) {
 	return str, nil
 }
 
-func lineItemNew(line string) (i *lineItem, err error) {
+func tagItemNew(line string) (i *tagItem, err error) {
 	sLine := strings.TrimSpace(line)
 	var tag int
 	if strings.Contains(sLine, "<CHIP>") || strings.Contains(sLine, "<chip>") {
 		tag = TAG_CHIP
-		i = &lineItem{tag: TAG_CHIP, data: sLine}
+		i = &tagItem{tag: TAG_CHIP, data: sLine}
 	} else if strings.Contains(sLine, "<REG>") || strings.Contains(sLine, "<reg>") {
 		tag = TAG_REG
-		i = &lineItem{tag: TAG_REG, data: sLine}
+		i = &tagItem{tag: TAG_REG, data: sLine}
 	} else if m, _ := regexp.MatchString(`\s*#`, sLine); m {
 		tag = TAG_COMMENT
 	} else {
 		if strs, ok := validField(sLine); ok {
 			tag = TAG_FIELD
-			i = &lineItem{tag: TAG_FIELD, data: strs[0], fieldValStr: strs[1]}
+			i = &tagItem{tag: TAG_FIELD, data: strs[0], fieldValStr: strs[1]}
 		} else {
 			tag = TAG_OTHER
 			if len(line) != 0 {
@@ -156,8 +156,8 @@ func processReg(line string) (*reg, error) {
 	return r, nil
 }
 
-func trim(reader *bufio.Reader) ([]*lineItem, error) {
-	items := make([]*lineItem, 0)
+func trim(reader *bufio.Reader) ([]*tagItem, error) {
+	items := make([]*tagItem, 0)
 	for {
 		line, err := readLine(reader)
 		if err != nil {
@@ -168,7 +168,7 @@ func trim(reader *bufio.Reader) ([]*lineItem, error) {
 			}
 		}
 
-		i, err := lineItemNew(line)
+		i, err := tagItemNew(line)
 		if err != nil {
 			clog.Fatal(err)
 		} else {
@@ -186,7 +186,7 @@ func trim(reader *bufio.Reader) ([]*lineItem, error) {
 	return items, nil
 }
 
-func parse(items []*lineItem) (*regJar, error) {
+func parse(items []*tagItem) (*regJar, error) {
 	var curReg *reg
 	jar := &regJar{}
 	for _, item := range items {
@@ -231,13 +231,13 @@ func regJarNew(filename string) (*regJar, error) {
 	}
 	defer f.Close()
 
-	// lines in file ---> []lineItem
+	// lines in file ---> []tagItem
 	items, err := trim(bufio.NewReader(f))
 	if err != nil {
 		return nil, err
 	}
 
-	// []lineItem -> regJar
+	// []tagItem -> regJar
 	jar, err := parse(items)
 	if err != nil {
 		return nil, err

@@ -114,7 +114,7 @@ const (
 
 var (
 	testSource string
-	testItems  []*lineItem
+	testItems  []*tagItem
 	testDebug  bool
 )
 
