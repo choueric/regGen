@@ -45,17 +45,21 @@ func (item *tagItem) String() string {
 	}
 }
 
-func printTrimItems(w io.Writer, items []*tagItem) {
-	for _, i := range items {
+type tagItemSlice []*tagItem
+
+func (s tagItemSlice) String() string {
+	var str bytes.Buffer
+	for _, i := range s {
 		switch i.tag {
 		case TAG_CHIP:
-			fmt.Fprintln(w, "[  CHIP ]", i.data)
+			fmt.Fprintln(&str, "[  CHIP ]", i.data)
 		case TAG_REG:
-			fmt.Fprintln(w, "[  REG  ]", i.data)
+			fmt.Fprintln(&str, "[  REG  ]", i.data)
 		case TAG_FIELD:
-			fmt.Fprintf(w, "[ FIELD ] %s (%s)\n", i.data, i.fieldValStr)
+			fmt.Fprintf(&str, "[ FIELD ] %s (%s)\n", i.data, i.fieldValStr)
 		}
 	}
+	return str.String()
 }
 
 type reg struct {
@@ -152,8 +156,8 @@ func processReg(line string) (*reg, error) {
 	return r, nil
 }
 
-func trim(reader *bufio.Reader) ([]*tagItem, error) {
-	items := make([]*tagItem, 0)
+func trim(reader *bufio.Reader) (tagItemSlice, error) {
+	items := tagItemSlice(make([]*tagItem, 0))
 	for {
 		line, err := readLine(reader)
 		if err != nil {
@@ -176,13 +180,13 @@ func trim(reader *bufio.Reader) ([]*tagItem, error) {
 
 	if debug {
 		fmt.Println("----------------- after trim ---------------")
-		printTrimItems(os.Stdout, items)
+		fmt.Println(items)
 	}
 
 	return items, nil
 }
 
-func parse(items []*tagItem) (*regJar, error) {
+func parse(items tagItemSlice) (*regJar, error) {
 	var curReg *reg
 	jar := &regJar{}
 	for _, item := range items {
@@ -227,13 +231,13 @@ func regJarNew(filename string) (*regJar, error) {
 	}
 	defer f.Close()
 
-	// lines in file ---> []tagItem
+	// lines in file ---> tagItemSlice
 	items, err := trim(bufio.NewReader(f))
 	if err != nil {
 		return nil, err
 	}
 
-	// []tagItem -> regJar
+	// tagItemSlice -> regJar
 	jar, err := parse(items)
 	if err != nil {
 		return nil, err
