@@ -21,7 +21,7 @@ cksel_reg: 6-7
 
 <reg>: 4
 hist_del: 0-4
-autosel_reg: 6-7
+autosel_reg: 6-7 (0b00: manual, 0b01: non_revert, 0b10: revert)
 
 <REG>: 5
 icmos: 6-7
@@ -31,7 +31,7 @@ sfout1_reg: 0-2
 sfout2_reg: 3-5
 
 <REG>: 7
-fosrefsel: 0-2
+fosrefsel: 0-2 (0b000: XTAL, 0b001: CKIN1, 0b010: CKIN2)
 
 <REG>: 8
 hlog_1:4-5
@@ -49,9 +49,9 @@ pd_ck1: 0
 pd_ck2: 1
 
 <REG>: 19
-lockt : 0-2
+lockt: 0-2 (0:106ms, 1:53ms, 2:26_5ms, 3:13_3ms, 4:6_6ms, 5:3_3ms, 6:1_66ms, 7:_833ms)
 VALTIME: 4-3 (0b00: 2ms, 0b01: 100ms, 0b10: 200ms, 0b11: 13s)
-FOS_THR: 6-5
+FOS_THR: 6-5 (0b00: 12PPM, 0b01: 49PPM, 0b10: 30PPM, 0b11: 200PPM)
 FOS_EN: 7
 
 <REG>: 20
@@ -68,7 +68,7 @@ CK1_ACTV_PIN: 1
 INT_POL: 0
 LOL_POL: 1
 CK_BAD_POL: 2
-CK_ACTV_ POL: 3
+CK_ACTV_POL: 3
 
 <REG>: 23
 los2_msk: 2
@@ -130,8 +130,9 @@ N32_M: 0-7
 N32_L: 0-7
 
 <REG>: 55
+CLKIN1RATE: 2-0 (0: 27MHZ, 1: 54MHZ, 2: 105MHZ, 3: 215MHZ, 4: 435MHZ, 5: 710MHZ)
+# values are same as CLKIN1RATE's
 CLKIN2RATE: 5-3
-CLKIN1RATE: 2-0
 
 <REG>: 128
 CK2_ACTV_REG: 1
@@ -173,8 +174,9 @@ ICAL: 6
 FASTLOCK: 0
 
 <REG>: 138
-LOS2_EN_H: 1
-LOS1_EN_H: 0
+LOS1_EN: 0 (0b00: dis, 0b10: LOSA, 0b11: los)
+# los2_en's values are the same as los1_en
+LOS2_EN: 1
 
 <REG>: 139
 LOS2_EN_L: 5
