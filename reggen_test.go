@@ -134,7 +134,7 @@ func init() {
 	}
 }
 
-func print_string_mismatch(a, b []byte) {
+func printStringMismatch(a, b []byte) {
 	if len(a) != len(b) {
 		fmt.Println("length doesn't match:", len(a), len(b))
 		if testDebug {
@@ -150,16 +150,16 @@ func print_string_mismatch(a, b []byte) {
 	}
 }
 
-func Test_trim(t *testing.T) {
+func TestTrim(t *testing.T) {
 	// testItems is already got in init()
 	result := testItems.String()
 	if strings.Compare(result, trimedStr) != 0 {
-		print_string_mismatch([]byte(result), []byte(trimedStr))
+		printStringMismatch([]byte(result), []byte(trimedStr))
 		t.Error("trim fail!")
 	}
 }
 
-func Test_parse(t *testing.T) {
+func TestParse(t *testing.T) {
 	jar, err := parse(testItems)
 	if err != nil {
 		t.Error(err)
@@ -168,12 +168,12 @@ func Test_parse(t *testing.T) {
 	var result bytes.Buffer
 	fmt.Fprint(&result, jar)
 	if strings.Compare(result.String(), parsedStr) != 0 {
-		print_string_mismatch(result.Bytes(), []byte(parsedStr))
+		printStringMismatch(result.Bytes(), []byte(parsedStr))
 		t.Error("parse fail!")
 	}
 }
 
-func Test_formatToC(t *testing.T) {
+func TestFormatToC(t *testing.T) {
 	jar, err := parse(testItems)
 	if err != nil {
 		t.Error(err)
@@ -182,7 +182,7 @@ func Test_formatToC(t *testing.T) {
 	var result bytes.Buffer
 	formatToC(jar, &result)
 	if strings.Compare(result.String(), formatCStr) != 0 {
-		print_string_mismatch(result.Bytes(), []byte(formatCStr))
+		printStringMismatch(result.Bytes(), []byte(formatCStr))
 		t.Error("parse fail!")
 	}
 }
