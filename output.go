@@ -47,7 +47,7 @@ func cfmtOutputBitField(w io.Writer, f *field, n string) {
 	}
 }
 
-func cfmtOutputMaskField(w io.Writer, f *field, n string) {
+func cfmtOutputRangeField(w io.Writer, f *field, n string) {
 	// start & end
 	fmt.Fprintf(w, "\t#define REG_%s_STR %d\n", n, f.start)
 	fmt.Fprintf(w, "\t#define REG_%s_END %d\n", n, f.end)
@@ -97,7 +97,7 @@ func formatToC(jar *regJar, ow io.Writer) {
 			if f.start == f.end {
 				cfmtOutputBitField(w, f, name)
 			} else {
-				cfmtOutputMaskField(w, f, name)
+				cfmtOutputRangeField(w, f, name)
 			}
 			cfmtOputputValues(w, f, name)
 			w.Flush()
