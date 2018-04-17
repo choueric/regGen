@@ -27,20 +27,21 @@ type tagItem struct {
 	fieldValStr string // only for filed line
 }
 
-func printRawLine(w io.Writer, tag int, line string) {
-	switch tag {
+func (item *tagItem) String() string {
+	switch item.tag {
 	case TAG_CHIP:
-		fmt.Println("[  CHIP ]", line)
+		return fmt.Sprintf("[  CHIP ] %s", item.data)
 	case TAG_REG:
-		fmt.Println("[  REG  ]", line)
+		return fmt.Sprintf("[  REG  ] %s", item.data)
 	case TAG_COMMENT:
-		fmt.Println("[ COMNT ]", line)
+		return fmt.Sprintf("[ COMNT ] %s", item.data)
 	case TAG_FIELD:
-		fmt.Println("[ FIELD ]", line)
+		return fmt.Sprintf("[ FIELD ] %s", item.data)
 	case TAG_OTHER:
-		fmt.Println("[ OTHER ]", line)
+		return fmt.Sprintf("[ OTHER ] %s", item.data)
 	default:
-		clog.Fatal("Unkonw type: " + line)
+		clog.Fatal("Unkonw type: " + item.data)
+		return ""
 	}
 }
 
@@ -94,23 +95,18 @@ func readLine(r *bufio.Reader) (string, error) {
 	return str, nil
 }
 
-func tagItemNew(line string) (i *tagItem, err error) {
+func tagItemNew(line string) (item *tagItem) {
 	sLine := strings.TrimSpace(line)
-	var tag int
 	if strings.Contains(sLine, "<CHIP>") || strings.Contains(sLine, "<chip>") {
-		tag = TAG_CHIP
-		i = &tagItem{tag: TAG_CHIP, data: sLine}
+		item = &tagItem{tag: TAG_CHIP, data: sLine}
 	} else if strings.Contains(sLine, "<REG>") || strings.Contains(sLine, "<reg>") {
-		tag = TAG_REG
-		i = &tagItem{tag: TAG_REG, data: sLine}
+		item = &tagItem{tag: TAG_REG, data: sLine}
 	} else if m, _ := regexp.MatchString(`\s*#`, sLine); m {
-		tag = TAG_COMMENT
+		item = &tagItem{tag: TAG_COMMENT, data: sLine}
 	} else {
 		if strs, ok := validField(sLine); ok {
-			tag = TAG_FIELD
-			i = &tagItem{tag: TAG_FIELD, data: strs[0], fieldValStr: strs[1]}
+			item = &tagItem{tag: TAG_FIELD, data: strs[0], fieldValStr: strs[1]}
 		} else {
-			tag = TAG_OTHER
 			if len(line) != 0 {
 				clog.Fatal("Invalid Format: [" + line + "]")
 			}
@@ -118,7 +114,7 @@ func tagItemNew(line string) (i *tagItem, err error) {
 	}
 
 	if debug {
-		printRawLine(os.Stdout, tag, line)
+		fmt.Println(item)
 	}
 
 	return
@@ -168,12 +164,12 @@ func trim(reader *bufio.Reader) ([]*tagItem, error) {
 			}
 		}
 
-		i, err := tagItemNew(line)
+		item := tagItemNew(line)
 		if err != nil {
 			clog.Fatal(err)
 		} else {
-			if i != nil {
-				items = append(items, i)
+			if item != nil && item.tag != TAG_COMMENT {
+				items = append(items, item)
 			}
 		}
 	}
