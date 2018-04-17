@@ -76,8 +76,8 @@ func cfmtOutputRangeField(w io.Writer, f *field, n string) {
 	}
 }
 
-func cfmtOputputValues(w io.Writer, f *field, n string) {
-	// values
+func cfmtOputputEnums(w io.Writer, f *field, n string) {
+	// Enums
 	if len(f.valData) != 0 {
 		for i, v := range f.valData {
 			bstr := strconv.FormatUint(uint64(v), 2)
@@ -99,7 +99,7 @@ func formatToC(jar *regJar, ow io.Writer) {
 			} else {
 				cfmtOutputRangeField(w, f, name)
 			}
-			cfmtOputputValues(w, f, name)
+			cfmtOputputEnums(w, f, name)
 			w.Flush()
 		}
 	}
