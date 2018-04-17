@@ -100,13 +100,13 @@ keywords and follows simple and loose rules. All keywords are case-insensitive.
   Example: `<REG>[Control]: 0`, where the register's name is `Control` and offset is 0.
   
 - `FIELD`: As says above, `FIELD` lines contains information of a register's
-  filed, including name, offset and values (optional) in the format of
-  `name: offset (value: valueName,)` that contains two parts. The `name-offset`
-  part is mandatory contrasting to the `values` part. Below explains more details
+  filed, including name, offset and enumrations (optional) in the format of
+  `name: offset (enumVal: enumName,)` that contains two parts. The `name-offset`
+  part is mandatory contrasting to the `enums` part. Below explains more details
   about `FIELD` line.
   
   Example: `ck_prior1 : 0-1`, where the field's name is `ck_prior1`, offset
-  range is `0-1` and there is no `values` part.
+  range is `0-1` and there is no `enums` part.
   
 ## `name-offset` part
 
@@ -114,13 +114,14 @@ This part of `FIELD` line contains contains field's name and offset. The offset
 are either bit or range which use `-` to connect. The start bit and end bit can
 in either sides of `-`.
   
-## `values` part
+## `enums` part
 
-This part of `FIELD` line is optional and gives the value range this field can
-have, which is usually used when the field's offset is not only one bit.
+This part of `FIELD` line is optional and gives the enumeration range this
+field can have, which is usually used when the field's offset is not only one
+bit.
 
-Embraced by `(` and `)`, the values are paired with `:`, where the value number
-is at left and value name right. Value pairs are separated with `,`.
+Embraced by `(` and `)`, the enums are paired with `:`, where the enum value 
+is at left and value name right. Enum pairs are separated with `,`.
 
 For example, the chip spec have one filed like:
 
@@ -138,7 +139,7 @@ VALTIME: 4-3 (0b00: 2ms, 0b01: 100ms, 0b10: 200ms, 0b11: 13s)
 VALTIME: 4-3 (0: 2ms, 1: 100ms, 2: 200ms, 3: 13s)
 ```
 
-As the example shows, the value number can be decimal and binary. Actually, it
+As the example shows, the enum number can be decimal and binary. Actually, it
 support four formats:
 
 - dec, like 10 = 10
