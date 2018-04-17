@@ -114,7 +114,7 @@ const (
 
 var (
 	testSource string
-	testItems  []*tagItem
+	testItems  tagItemSlice
 	testDebug  bool
 )
 
@@ -152,10 +152,9 @@ func print_string_mismatch(a, b []byte) {
 
 func Test_trim(t *testing.T) {
 	// testItems is already got in init()
-	var result bytes.Buffer
-	printTrimItems(&result, testItems)
-	if strings.Compare(result.String(), trimedStr) != 0 {
-		print_string_mismatch(result.Bytes(), []byte(trimedStr))
+	result := testItems.String()
+	if strings.Compare(result, trimedStr) != 0 {
+		print_string_mismatch([]byte(result), []byte(trimedStr))
 		t.Error("trim fail!")
 	}
 }
