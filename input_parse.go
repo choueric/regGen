@@ -62,6 +62,16 @@ func (s tagItemSlice) String() string {
 	return str.String()
 }
 
+func (s *tagItemSlice) addTagItems(v ...*tagItem) {
+	p := *s
+	p = append(p, v...)
+	*s = p
+}
+
+func newTagItemSlice() tagItemSlice {
+	return tagItemSlice(make([]*tagItem, 0))
+}
+
 type reg struct {
 	name   string
 	offset uint64
@@ -70,6 +80,10 @@ type reg struct {
 
 func (r *reg) String() string {
 	return fmt.Sprintf("\"%s\", %#x", r.name, r.offset)
+}
+
+func (r *reg) addFileds(f ...*field) {
+	r.fields = append(r.fields, f...)
 }
 
 type regJar struct {
@@ -89,6 +103,10 @@ func (jar *regJar) String() string {
 	return str.String()
 }
 
+func (jar *regJar) addRegs(v ...*reg) {
+	jar.regs = append(jar.regs, v...)
+}
+
 func readLine(r *bufio.Reader) (string, error) {
 	str, err := r.ReadString('\n')
 	if err != nil {
@@ -99,7 +117,7 @@ func readLine(r *bufio.Reader) (string, error) {
 	return str, nil
 }
 
-func tagItemNew(line string) (item *tagItem) {
+func newTagItem(line string) (item *tagItem) {
 	sLine := strings.TrimSpace(line)
 	if strings.Contains(sLine, "<CHIP>") || strings.Contains(sLine, "<chip>") {
 		item = &tagItem{tag: TAG_CHIP, data: sLine}
@@ -133,7 +151,7 @@ func processChip(line string) (string, error) {
 }
 
 func processReg(line string) (*reg, error) {
-	r := &reg{}
+	r := new(reg)
 	strs := strings.Split(line, ":")
 	if len(strs) != 2 {
 		clog.Fatal("Invalid Format: [" + line + "]")
@@ -157,7 +175,7 @@ func processReg(line string) (*reg, error) {
 }
 
 func trim(reader *bufio.Reader) (tagItemSlice, error) {
-	items := tagItemSlice(make([]*tagItem, 0))
+	items := newTagItemSlice()
 	for {
 		line, err := readLine(reader)
 		if err != nil {
@@ -168,12 +186,12 @@ func trim(reader *bufio.Reader) (tagItemSlice, error) {
 			}
 		}
 
-		item := tagItemNew(line)
+		item := newTagItem(line)
 		if err != nil {
 			clog.Fatal(err)
 		} else {
 			if item != nil && item.tag != TAG_COMMENT {
-				items = append(items, item)
+				items.addTagItems(item)
 			}
 		}
 	}
@@ -188,7 +206,7 @@ func trim(reader *bufio.Reader) (tagItemSlice, error) {
 
 func parse(items tagItemSlice) (*regJar, error) {
 	var curReg *reg
-	jar := &regJar{}
+	jar := new(regJar)
 	for _, item := range items {
 		switch item.tag {
 		case TAG_CHIP:
@@ -202,7 +220,7 @@ func parse(items tagItemSlice) (*regJar, error) {
 			if err != nil {
 				return nil, err
 			}
-			jar.regs = append(jar.regs, r)
+			jar.addRegs(r)
 			curReg = r
 		case TAG_FIELD:
 			if curReg == nil {
@@ -212,7 +230,7 @@ func parse(items tagItemSlice) (*regJar, error) {
 			if err != nil {
 				return nil, err
 			}
-			curReg.fields = append(curReg.fields, f)
+			curReg.addFileds(f)
 		}
 	}
 
