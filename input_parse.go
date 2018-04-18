@@ -22,9 +22,9 @@ const (
 )
 
 type tagItem struct {
-	tag         int
-	data        string
-	fieldValStr string // only for filed line
+	tag   int
+	data  string
+	enums string
 }
 
 func (item *tagItem) String() string {
@@ -36,7 +36,11 @@ func (item *tagItem) String() string {
 	case TAG_COMMENT:
 		return fmt.Sprintf("[ COMNT ] %s", item.data)
 	case TAG_FIELD:
-		return fmt.Sprintf("[ FIELD ] %s", item.data)
+		if item.enums == "" {
+			return fmt.Sprintf("[ FIELD ] %s", item.data)
+		} else {
+			return fmt.Sprintf("[ FIELD ] %s (%s)", item.data, item.enums)
+		}
 	case TAG_OTHER:
 		return fmt.Sprintf("[ OTHER ] %s", item.data)
 	default:
@@ -56,7 +60,7 @@ func (s tagItemSlice) String() string {
 		case TAG_REG:
 			fmt.Fprintln(&str, "[  REG  ]", i.data)
 		case TAG_FIELD:
-			fmt.Fprintf(&str, "[ FIELD ] %s (%s)\n", i.data, i.fieldValStr)
+			fmt.Fprintf(&str, "[ FIELD ] %s (%s)\n", i.data, i.enums)
 		}
 	}
 	return str.String()
@@ -127,7 +131,7 @@ func newTagItem(line string) (item *tagItem) {
 		item = &tagItem{tag: TAG_COMMENT, data: sLine}
 	} else {
 		if strs, ok := validField(sLine); ok {
-			item = &tagItem{tag: TAG_FIELD, data: strs[0], fieldValStr: strs[1]}
+			item = &tagItem{tag: TAG_FIELD, data: strs[0], enums: strs[1]}
 		} else {
 			if len(line) != 0 {
 				clog.Fatal("Invalid Format: [" + line + "]")
@@ -226,7 +230,7 @@ func parse(items tagItemSlice) (*regJar, error) {
 			if curReg == nil {
 				clog.Fatal("Invalid Format: no <REG> at start")
 			}
-			f, err := processFiled(item.data, item.fieldValStr)
+			f, err := processFiled(item.data, item.enums)
 			if err != nil {
 				return nil, err
 			}

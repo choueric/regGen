@@ -48,12 +48,12 @@ func parseOtherBaseStr(str string) (uint32, error) {
 	}
 }
 
-// validate the field format like `name: offset (val: vname, val:vname)`
+// validate the field format like `name: offset (enumVal: enumName, enumVal:enumName)`
 // which contains two parts:
 //   - nameOffset, i.e. `name: offset`
-//   - values, i.e. `(val: vname, val:vname)`. This part is optional
+//   - enums, i.e. `(enumVal: enumName, val:name)`. This part is optional
 // If format is not correct, return (nil, false)
-// Otherwise, return ({str of nameOffset, str of values}, true)
+// Otherwise, return ({nameOffset str, enums str}, true)
 func validField(line string) ([]string, bool) {
 	if !strings.Contains(line, ":") {
 		return nil, false
@@ -113,8 +113,8 @@ func processFiledNameOffset(f *field, nameOffset string) error {
 	return nil
 }
 
-func processFiledValues(f *field, valStr string) error {
-	if valStr == "" {
+func processFiledEnums(f *field, enumStr string) error {
+	if enumStr == "" {
 		return nil
 	}
 
@@ -124,15 +124,15 @@ func processFiledValues(f *field, valStr string) error {
 	addPair := func(str string) {
 		pair := strings.Split(str, ":")
 		if len(pair) != 2 {
-			clog.Fatal("Invalid field value format: " + valStr)
+			clog.Fatal("Invalid field value format: " + enumStr)
 		}
 		valStrs = append(valStrs, strings.TrimSpace(pair[0]))
 		nameStrs = append(nameStrs, strings.TrimSpace(pair[1]))
 	}
 
-	strs := strings.Split(valStr, ",")
+	strs := strings.Split(enumStr, ",")
 	if len(strs) == 1 { // may contain single pair
-		addPair(valStr)
+		addPair(enumStr)
 	} else {
 		for _, pairStr := range strs {
 			addPair(pairStr)
@@ -161,14 +161,14 @@ func processFiledValues(f *field, valStr string) error {
 	return nil
 }
 
-func processFiled(nameOffset, valStr string) (*field, error) {
-	f := &field{}
+func processFiled(nameOffset, enums string) (*field, error) {
+	f := new(field)
 
 	if err := processFiledNameOffset(f, nameOffset); err != nil {
 		return nil, err
 	}
 
-	if err := processFiledValues(f, valStr); err != nil {
+	if err := processFiledEnums(f, enums); err != nil {
 		return nil, err
 	}
 
