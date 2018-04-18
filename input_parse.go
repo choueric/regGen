@@ -246,7 +246,7 @@ func parse(items tagItemSlice) (*regJar, error) {
 	return jar, nil
 }
 
-func regJarNew(filename string) (*regJar, error) {
+func newRegJar(filename string) (*regJar, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err

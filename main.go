@@ -38,7 +38,7 @@ func main() {
 		clog.Fatal("Invalid format: " + format)
 	}
 
-	jar, err := regJarNew(input)
+	jar, err := newRegJar(input)
 	if err != nil {
 		clog.Fatal(err)
 	}
