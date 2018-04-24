@@ -100,7 +100,7 @@ keywords and follows simple and loose rules. All keywords are case-insensitive.
   Example: `<REG>[Control]: 0`, where the register's name is `Control` and offset is 0.
   
 - `FIELD`: As says above, `FIELD` lines contains information of a register's
-  filed, including name, offset and enumrations (optional) in the format of
+  field, including name, offset and enumrations (optional) in the format of
   `name: offset (enumVal: enumName,)` that contains two parts. The `name-offset`
   part is mandatory contrasting to the `enums` part. Below explains more details
   about `FIELD` line.
@@ -123,7 +123,7 @@ bit.
 Embraced by `(` and `)`, the enums are paired with `:`, where the enum value 
 is at left and value name right. Enum pairs are separated with `,`.
 
-For example, the chip spec have one filed like:
+For example, the chip spec have one field like:
 
 ```
 4:3 | VALTIME[2]
@@ -155,9 +155,9 @@ A formal-like sepcification is:
 <chip>: chipName
 
 <reg>[regName]: offset
-filed_1: bit
-filed_2: startBit - endBit
-filed_3: endBit - startBit (val1: val1Name, val2: val2Name)
+field_1: bit
+field_2: startBit - endBit
+field_3: endBit - startBit (val1: val1Name, val2: val2Name)
 ```
 
 # output format
@@ -168,7 +168,7 @@ macros to represent all registers and fields and capitalize all their names.
 It handle two types of field: `bit` and `range`. There are some common macros and
 some are not. The common macros are:
 
-- `REG_XXX_VAL(rv)`: For `bit` type, it gets the value of this filed, 1 or 0 of
+- `REG_XXX_VAL(rv)`: For `bit` type, it gets the value of this field, 1 or 0 of
   course. For `range`, it can get this field's value from register value `rv`.
   For example, `REG_XXX_VAL(0x10) = 2` for `3-4`.
 
@@ -184,7 +184,7 @@ some are not. The common macros are:
 
 - The macros only for `bit` type are:
 	- `REG_XXX_BIT`: i.e. BIT(n), n is the offset.
-	- `REG_XXX_POS`: it is the offset of this filed.
+	- `REG_XXX_POS`: it is the offset of this field.
 
 - The macros only for `range` type are:
 	- `REG_XXX_MSK`: the mask for this field. For example, `REG_XXX_MSK = 0x18`
