@@ -20,7 +20,7 @@ var (
 	BUILD_INFO  = ""
 )
 
-func main() {
+func init() {
 	flag.BoolVar(&dbg.True, "d", false, "enable debug")
 	flag.StringVar(&input, "i", "input.regs", "input file.")
 	flag.StringVar(&formatArg, "f", "cmacro", "output format type.")
@@ -37,7 +37,9 @@ func main() {
 		clog.SetFlags(clog.Lshortfile | clog.Lcolor)
 		clog.Println(input)
 	}
+}
 
+func main() {
 	fmtter, err := format.New(formatArg)
 	if err != nil {
 		clog.Fatal(err)
