@@ -3,6 +3,7 @@ package regjar
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -75,6 +76,10 @@ func processWidth(line string) (uint32, error) {
 	w, err := goutils.ParseUint(strings.TrimSpace(strs[1]), 32)
 	if err != nil {
 		return 0, err
+	}
+
+	if w != 8 && w != 16 && w != 32 && w != 64 {
+		return 0, errors.New(fmt.Sprintf("Invalid bit width %d", w))
 	}
 	return uint32(w), nil
 }
