@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"strconv"
@@ -12,6 +13,25 @@ type formatFunc func(jar *regJar, w io.Writer)
 
 var outputFormat = map[string]formatFunc{
 	"c": formatToC,
+}
+
+func prefixStringPerLine(w io.Writer, lines, prefixStr string) {
+	if lines == "" {
+		return
+	}
+
+	scanner := bufio.NewScanner(strings.NewReader(lines))
+	for scanner.Scan() {
+		fmt.Fprintln(w, prefixStr+scanner.Text())
+	}
+}
+
+func cfmtOutputLicense(w io.Writer, license string) {
+	if license == "" {
+		return
+	}
+	prefixStringPerLine(w, license, "// ")
+	fmt.Fprintf(w, "\n")
 }
 
 func cfmtOutputBanner(w io.Writer, jar *regJar) {
