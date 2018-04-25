@@ -12,6 +12,7 @@ import (
 
 const (
 	tag_chip = iota
+	tag_width
 	tag_reg
 	tag_field
 	tag_comment
@@ -28,6 +29,8 @@ func (item *tagItem) String() string {
 	switch item.tag {
 	case tag_chip:
 		return fmt.Sprintf("[  CHIP ] %s", item.data)
+	case tag_width:
+		return fmt.Sprintf("[ WIDTH ] %s", item.data)
 	case tag_reg:
 		return fmt.Sprintf("[  REG  ] %s", item.data)
 	case tag_comment:
@@ -54,6 +57,8 @@ func (s tagItemSlice) String() string {
 		switch i.tag {
 		case tag_chip:
 			fmt.Fprintln(&str, "[  CHIP ]", i.data)
+		case tag_width:
+			fmt.Fprintln(&str, "[ WIDTH ]", i.data)
 		case tag_reg:
 			fmt.Fprintln(&str, "[  REG  ]", i.data)
 		case tag_field:
@@ -73,27 +78,44 @@ func newTagItemSlice() tagItemSlice {
 	return tagItemSlice(make([]*tagItem, 0))
 }
 
-func newTagItem(line string) (item *tagItem) {
+func parseTagItem(line string) *tagItem {
 	sLine := strings.TrimSpace(line)
-	if strings.Contains(sLine, "<CHIP>") || strings.Contains(sLine, "<chip>") {
-		item = &tagItem{tag: tag_chip, data: sLine}
-	} else if strings.Contains(sLine, "<REG>") || strings.Contains(sLine, "<reg>") {
-		item = &tagItem{tag: tag_reg, data: sLine}
-	} else if m, _ := regexp.MatchString(`\s*#`, sLine); m {
-		item = &tagItem{tag: tag_comment, data: sLine}
+
+	// comment
+	if m, _ := regexp.MatchString(`\s*#`, sLine); m {
+		return &tagItem{tag: tag_comment, data: sLine}
+	}
+
+	// other
+	strs := strings.Split(sLine, ":")
+	if len(strs) == 1 {
+		return &tagItem{tag: tag_other, data: sLine}
+	}
+
+	// valid tag line
+	tagStr := strings.ToUpper(strs[0])
+	if strings.Contains(tagStr, "<CHIP>") {
+		return &tagItem{tag: tag_chip, data: sLine}
+	} else if strings.Contains(tagStr, "<WIDTH>") {
+		return &tagItem{tag: tag_width, data: sLine}
+	} else if strings.Contains(tagStr, "<REG>") {
+		return &tagItem{tag: tag_reg, data: sLine}
 	} else {
 		if strs, ok := validField(sLine); ok {
-			item = &tagItem{tag: tag_field, data: strs[0], enums: strs[1]}
+			return &tagItem{tag: tag_field, data: strs[0], enums: strs[1]}
 		} else {
 			if len(line) != 0 {
 				clog.Fatal("Invalid Format: [" + line + "]")
 			}
 		}
 	}
+	return nil
+}
 
+func newTagItem(line string) *tagItem {
+	item := parseTagItem(line)
 	if dbg.True {
 		fmt.Println(item)
 	}
-
-	return
+	return item
 }

@@ -29,13 +29,15 @@ func (r *Reg) addFileds(f ...*Field) {
 }
 
 type Jar struct {
-	Chip string
-	Regs []*Reg
+	Chip  string
+	Width uint32
+	Regs  []*Reg
 }
 
 func (jar *Jar) String() string {
 	var str bytes.Buffer
 	fmt.Fprintf(&str, "CHIP: \"%s\"\n", jar.Chip)
+	fmt.Fprintf(&str, "WIDTH: %d\n", jar.Width)
 	for _, r := range jar.Regs {
 		fmt.Fprintln(&str, r)
 		for _, f := range r.Fields {
@@ -49,12 +51,32 @@ func (jar *Jar) addRegs(v ...*Reg) {
 	jar.Regs = append(jar.Regs, v...)
 }
 
+// create a new jar and setup default values
+func newJar() *Jar {
+	jar := new(Jar)
+	jar.Width = 8
+	return jar
+}
+
 func processChip(line string) (string, error) {
 	strs := strings.Split(line, ":")
 	if len(strs) != 2 {
 		clog.Fatal("Invalid Format: [" + line + "]")
 	}
 	return strings.TrimSpace(strs[1]), nil
+}
+
+func processWidth(line string) (uint32, error) {
+	strs := strings.Split(line, ":")
+	if len(strs) != 2 {
+		clog.Fatal("Invalid Format: [" + line + "]")
+	}
+
+	w, err := goutils.ParseUint(strings.TrimSpace(strs[1]), 32)
+	if err != nil {
+		return 0, err
+	}
+	return uint32(w), nil
 }
 
 func processReg(line string) (*Reg, error) {
@@ -113,7 +135,7 @@ func trim(reader *bufio.Reader) (tagItemSlice, error) {
 
 func parse(items tagItemSlice) (*Jar, error) {
 	var curReg *Reg
-	jar := new(Jar)
+	jar := newJar()
 	for _, item := range items {
 		switch item.tag {
 		case tag_chip:
@@ -122,6 +144,12 @@ func parse(items tagItemSlice) (*Jar, error) {
 				return nil, err
 			}
 			jar.Chip = chip
+		case tag_width:
+			width, err := processWidth(item.data)
+			if err != nil {
+				return nil, err
+			}
+			jar.Width = width
 		case tag_reg:
 			r, err := processReg(item.data)
 			if err != nil {
@@ -131,11 +159,15 @@ func parse(items tagItemSlice) (*Jar, error) {
 			curReg = r
 		case tag_field:
 			if curReg == nil {
-				clog.Fatal("Invalid Format: no <REG> at start")
+				clog.Fatal("Invalid Format: no <REG> at start.")
 			}
 			f, err := processFiled(item.data, item.enums)
 			if err != nil {
 				return nil, err
+			}
+			if f.End >= jar.Width {
+				clog.Fatal(fmt.Sprintf("Field offset %d is over bit-width %d.",
+					f.End, jar.Width))
 			}
 			curReg.addFileds(f)
 		}
