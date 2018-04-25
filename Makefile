@@ -15,6 +15,9 @@ all:bin
 bin:
 	@go build -ldflags "$(X_ARGS)" -o $(EXEC)
 
+debug: bin
+	@./$(EXEC) -i chips/simple.regs -d | less
+
 install:$(EXEC)
 	install -d $(BIN)
 	install $(EXEC) $(BIN)
@@ -27,4 +30,4 @@ archive:
 	@git archive master --prefix="$(EXEC)-$(VER)/" --format tar.gz -o $(TAR)
 
 test:
-	@go test
+	@go test ./...
