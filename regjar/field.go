@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/choueric/clog"
+	"github.com/choueric/goutils"
 )
 
 type Field struct {
@@ -28,24 +29,6 @@ func (f *Field) String() string {
 	}
 	fmt.Fprintf(&str, ")")
 	return str.String()
-}
-
-// `0b000111` to uint32
-func parseBinStr(str string) (uint32, error) {
-	if v, err := strconv.ParseUint(str[2:], 2, 32); err != nil {
-		return 0, err
-	} else {
-		return uint32(v), nil
-	}
-}
-
-// base 16`0x`, base 8`0` and base 10 to uint32
-func parseOtherBaseStr(str string) (uint32, error) {
-	if v, err := strconv.ParseUint(str, 0, 32); err != nil {
-		return 0, err
-	} else {
-		return uint32(v), nil
-	}
 }
 
 // validate the field format like `name: offset (enumVal: enumName, enumVal:enumName)`
@@ -139,21 +122,10 @@ func processFiledEnums(f *Field, enumStr string) error {
 		}
 	}
 
-	parseFunc := map[bool]func(string) (uint32, error){
-		true:  parseBinStr,
-		false: parseOtherBaseStr,
-	}
-
 	for i, ns := range nameStrs {
-		matched, err := regexp.MatchString(`^0b[01]*`, valStrs[i])
-		if err != nil {
-			clog.Fatal(err)
-		}
-
-		if v, err := parseFunc[matched](valStrs[i]); err != nil {
-			clog.Fatal(err)
+		if v, err := goutils.ParseUint(valStrs[i], 32); err != nil {
 		} else {
-			f.EnumVals = append(f.EnumVals, v)
+			f.EnumVals = append(f.EnumVals, uint32(v))
 			f.EnumNames = append(f.EnumNames, ns)
 		}
 	}
