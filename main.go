@@ -3,77 +3,27 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path"
 
 	"github.com/choueric/clog"
+	"github.com/choueric/regGen/dbg"
+	"github.com/choueric/regGen/format"
+	"github.com/choueric/regGen/licenseload"
+	"github.com/choueric/regGen/regjar"
 )
 
 var (
-	input             string
-	debug             bool
-	format            string
-	licenseFile       string
-	licenseConfigFile string
-	version           = "0.0.4"
-	BUILD_INFO        = ""
+	input       string
+	formatArg   string
+	licenseFile string
+	version     = "0.0.4"
+	BUILD_INFO  = ""
 )
 
-func init() {
-	homeDir := os.Getenv("HOME")
-	if homeDir == "" {
-		clog.Fatal("$HOME is empty")
-	}
-	licenseConfigFile = path.Join(homeDir, ".regGen/license")
-}
-
-func loadLicense(filepath string) (string, error) {
-	if filepath == "" {
-		exist, err := isFileExist(licenseConfigFile)
-		if err != nil {
-			return "", err
-		}
-		if exist {
-			filepath = licenseConfigFile
-		}
-	} else {
-		exist, err := isFileExist(filepath)
-		if err != nil {
-			return "", err
-		}
-		if !exist {
-			clog.Fatal(filepath + " does not exist")
-		}
-	}
-
-	if filepath == "" {
-		return "", nil
-	}
-
-	content, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		return "", err
-	} else {
-		return string(content), nil
-	}
-}
-
-func isFileExist(filepath string) (bool, error) {
-	if _, err := os.Stat(filepath); err != nil {
-		if os.IsNotExist(err) {
-			return false, nil
-		} else {
-			return false, err
-		}
-	}
-	return true, nil
-}
-
 func main() {
-	flag.BoolVar(&debug, "d", false, "enable debug")
+	flag.BoolVar(&dbg.True, "d", false, "enable debug")
 	flag.StringVar(&input, "i", "input.regs", "input file.")
-	flag.StringVar(&format, "f", "c", "output format type. [c]")
+	flag.StringVar(&formatArg, "f", "cmacro", "output format type.")
 	flag.StringVar(&licenseFile, "l", "", "specify license file.")
 
 	defUsage := flag.Usage
@@ -83,29 +33,29 @@ func main() {
 	}
 	flag.Parse()
 
-	if debug {
+	if dbg.True {
 		clog.SetFlags(clog.Lshortfile | clog.Lcolor)
 		clog.Println(input)
 	}
 
-	fmtFunc, ok := outputFormat[format]
-	if !ok {
-		clog.Fatal("Invalid format: " + format)
-	}
-
-	license, err := loadLicense(licenseFile)
+	fmtter, err := format.New(formatArg)
 	if err != nil {
 		clog.Fatal(err)
 	}
 
-	jar, err := newRegJar(input)
+	license, err := licenseload.Load(licenseFile)
 	if err != nil {
 		clog.Fatal(err)
 	}
 
-	if debug {
+	jar, err := regjar.New(input)
+	if err != nil {
+		clog.Fatal(err)
+	}
+
+	if dbg.True {
 		fmt.Println("----------------- format output ---------------")
 	}
-	cfmtOutputLicense(os.Stdout, license)
-	fmtFunc(jar, os.Stdout)
+	fmtter.FormatLicense(os.Stdout, license)
+	fmtter.FormatRegJar(os.Stdout, jar)
 }

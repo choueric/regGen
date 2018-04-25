@@ -1,4 +1,4 @@
-package main
+package regjar
 
 import (
 	"bytes"
@@ -11,20 +11,20 @@ import (
 	"github.com/choueric/clog"
 )
 
-type field struct {
-	name    string
-	start   uint32
-	end     uint32
-	valData []uint32
-	valName []string
+type Field struct {
+	Name      string
+	Start     uint32
+	End       uint32
+	EnumVals  []uint32
+	EnumNames []string
 }
 
-func (f *field) String() string {
+func (f *Field) String() string {
 	var str bytes.Buffer
-	fmt.Fprintf(&str, "%s: [%d:%d]", f.name, f.start, f.end)
+	fmt.Fprintf(&str, "%s: [%d:%d]", f.Name, f.Start, f.End)
 	fmt.Fprintf(&str, " (")
-	for i, v := range f.valData {
-		fmt.Fprintf(&str, "%d: %s, ", v, f.valName[i])
+	for i, v := range f.EnumVals {
+		fmt.Fprintf(&str, "%d: %s, ", v, f.EnumNames[i])
 	}
 	fmt.Fprintf(&str, ")")
 	return str.String()
@@ -73,13 +73,13 @@ func validField(line string) ([]string, bool) {
 	return []string{line, ""}, true
 }
 
-func processFiledNameOffset(f *field, nameOffset string) error {
+func processFiledNameOffset(f *Field, nameOffset string) error {
 	strs := strings.Split(nameOffset, ":")
 	if len(strs) != 2 {
 		return errors.New("Invalid Format: " + nameOffset)
 	}
 
-	f.name = strings.TrimSpace(strs[0])
+	f.Name = strings.TrimSpace(strs[0])
 	offsetStr := strings.TrimSpace(strs[1])
 	strs = strings.Split(offsetStr, "-")
 	if len(strs) == 1 {
@@ -88,32 +88,32 @@ func processFiledNameOffset(f *field, nameOffset string) error {
 			clog.Error(nameOffset)
 			return err
 		}
-		f.end = uint32(offset)
-		f.start = f.end
+		f.End = uint32(offset)
+		f.Start = f.End
 	} else if len(strs) == 2 {
 		offset, err := strconv.ParseInt(strings.TrimSpace(strs[0]), 0, 32)
 		if err != nil {
 			clog.Error(nameOffset)
 			return err
 		}
-		f.start = uint32(offset)
+		f.Start = uint32(offset)
 
 		offset, err = strconv.ParseInt(strings.TrimSpace(strs[1]), 0, 32)
 		if err != nil {
 			clog.Error(nameOffset)
 			return err
 		}
-		f.end = uint32(offset)
+		f.End = uint32(offset)
 
-		if f.start > f.end {
-			f.start, f.end = f.end, f.start
+		if f.Start > f.End {
+			f.Start, f.End = f.End, f.Start
 		}
 	}
 
 	return nil
 }
 
-func processFiledEnums(f *field, enumStr string) error {
+func processFiledEnums(f *Field, enumStr string) error {
 	if enumStr == "" {
 		return nil
 	}
@@ -153,16 +153,16 @@ func processFiledEnums(f *field, enumStr string) error {
 		if v, err := parseFunc[matched](valStrs[i]); err != nil {
 			clog.Fatal(err)
 		} else {
-			f.valData = append(f.valData, v)
-			f.valName = append(f.valName, ns)
+			f.EnumVals = append(f.EnumVals, v)
+			f.EnumNames = append(f.EnumNames, ns)
 		}
 	}
 
 	return nil
 }
 
-func processFiled(nameOffset, enums string) (*field, error) {
-	f := new(field)
+func processFiled(nameOffset, enums string) (*Field, error) {
+	f := new(Field)
 
 	if err := processFiledNameOffset(f, nameOffset); err != nil {
 		return nil, err

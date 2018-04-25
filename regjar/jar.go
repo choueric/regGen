@@ -1,4 +1,4 @@
-package main
+package regjar
 
 import (
 	"bufio"
@@ -11,14 +11,15 @@ import (
 	"strings"
 
 	"github.com/choueric/clog"
+	"github.com/choueric/regGen/dbg"
 )
 
 const (
-	TAG_CHIP = iota
-	TAG_REG
-	TAG_FIELD
-	TAG_COMMENT
-	TAG_OTHER
+	tag_chip = iota
+	tag_reg
+	tag_field
+	tag_comment
+	tag_other
 )
 
 type tagItem struct {
@@ -29,19 +30,19 @@ type tagItem struct {
 
 func (item *tagItem) String() string {
 	switch item.tag {
-	case TAG_CHIP:
+	case tag_chip:
 		return fmt.Sprintf("[  CHIP ] %s", item.data)
-	case TAG_REG:
+	case tag_reg:
 		return fmt.Sprintf("[  REG  ] %s", item.data)
-	case TAG_COMMENT:
+	case tag_comment:
 		return fmt.Sprintf("[ COMNT ] %s", item.data)
-	case TAG_FIELD:
+	case tag_field:
 		if item.enums == "" {
 			return fmt.Sprintf("[ FIELD ] %s", item.data)
 		} else {
 			return fmt.Sprintf("[ FIELD ] %s (%s)", item.data, item.enums)
 		}
-	case TAG_OTHER:
+	case tag_other:
 		return fmt.Sprintf("[ OTHER ] %s", item.data)
 	default:
 		clog.Fatal("Unkonw type: " + item.data)
@@ -55,11 +56,11 @@ func (s tagItemSlice) String() string {
 	var str bytes.Buffer
 	for _, i := range s {
 		switch i.tag {
-		case TAG_CHIP:
+		case tag_chip:
 			fmt.Fprintln(&str, "[  CHIP ]", i.data)
-		case TAG_REG:
+		case tag_reg:
 			fmt.Fprintln(&str, "[  REG  ]", i.data)
-		case TAG_FIELD:
+		case tag_field:
 			fmt.Fprintf(&str, "[ FIELD ] %s (%s)\n", i.data, i.enums)
 		}
 	}
@@ -76,39 +77,39 @@ func newTagItemSlice() tagItemSlice {
 	return tagItemSlice(make([]*tagItem, 0))
 }
 
-type reg struct {
-	name   string
-	offset uint64
-	fields []*field
+type Reg struct {
+	Name   string
+	Offset uint64
+	Fields []*Field
 }
 
-func (r *reg) String() string {
-	return fmt.Sprintf("\"%s\", %#x", r.name, r.offset)
+func (r *Reg) String() string {
+	return fmt.Sprintf("\"%s\", %#x", r.Name, r.Offset)
 }
 
-func (r *reg) addFileds(f ...*field) {
-	r.fields = append(r.fields, f...)
+func (r *Reg) addFileds(f ...*Field) {
+	r.Fields = append(r.Fields, f...)
 }
 
-type regJar struct {
-	chip string
-	regs []*reg
+type Jar struct {
+	Chip string
+	Regs []*Reg
 }
 
-func (jar *regJar) String() string {
+func (jar *Jar) String() string {
 	var str bytes.Buffer
-	fmt.Fprintf(&str, "CHIP: \"%s\"\n", jar.chip)
-	for _, r := range jar.regs {
+	fmt.Fprintf(&str, "CHIP: \"%s\"\n", jar.Chip)
+	for _, r := range jar.Regs {
 		fmt.Fprintln(&str, r)
-		for _, f := range r.fields {
+		for _, f := range r.Fields {
 			fmt.Fprintln(&str, "   ", f)
 		}
 	}
 	return str.String()
 }
 
-func (jar *regJar) addRegs(v ...*reg) {
-	jar.regs = append(jar.regs, v...)
+func (jar *Jar) addRegs(v ...*Reg) {
+	jar.Regs = append(jar.Regs, v...)
 }
 
 func readLine(r *bufio.Reader) (string, error) {
@@ -124,14 +125,14 @@ func readLine(r *bufio.Reader) (string, error) {
 func newTagItem(line string) (item *tagItem) {
 	sLine := strings.TrimSpace(line)
 	if strings.Contains(sLine, "<CHIP>") || strings.Contains(sLine, "<chip>") {
-		item = &tagItem{tag: TAG_CHIP, data: sLine}
+		item = &tagItem{tag: tag_chip, data: sLine}
 	} else if strings.Contains(sLine, "<REG>") || strings.Contains(sLine, "<reg>") {
-		item = &tagItem{tag: TAG_REG, data: sLine}
+		item = &tagItem{tag: tag_reg, data: sLine}
 	} else if m, _ := regexp.MatchString(`\s*#`, sLine); m {
-		item = &tagItem{tag: TAG_COMMENT, data: sLine}
+		item = &tagItem{tag: tag_comment, data: sLine}
 	} else {
 		if strs, ok := validField(sLine); ok {
-			item = &tagItem{tag: TAG_FIELD, data: strs[0], enums: strs[1]}
+			item = &tagItem{tag: tag_field, data: strs[0], enums: strs[1]}
 		} else {
 			if len(line) != 0 {
 				clog.Fatal("Invalid Format: [" + line + "]")
@@ -139,7 +140,7 @@ func newTagItem(line string) (item *tagItem) {
 		}
 	}
 
-	if debug {
+	if dbg.True {
 		fmt.Println(item)
 	}
 
@@ -154,8 +155,8 @@ func processChip(line string) (string, error) {
 	return strings.TrimSpace(strs[1]), nil
 }
 
-func processReg(line string) (*reg, error) {
-	r := new(reg)
+func processReg(line string) (*Reg, error) {
+	r := new(Reg)
 	strs := strings.Split(line, ":")
 	if len(strs) != 2 {
 		clog.Fatal("Invalid Format: [" + line + "]")
@@ -165,15 +166,15 @@ func processReg(line string) (*reg, error) {
 			clog.Error(line)
 			return nil, err
 		}
-		r.offset = uint64(offset)
+		r.Offset = uint64(offset)
 	}
 
 	a := strings.IndexByte(line, '[')
 	b := strings.IndexByte(line, ']')
 	if a != -1 && b != -1 {
-		r.name = strings.TrimSpace(line[a+1 : b])
+		r.Name = strings.TrimSpace(line[a+1 : b])
 	} else {
-		r.name = strconv.FormatUint(r.offset, 10)
+		r.Name = strconv.FormatUint(r.Offset, 10)
 	}
 	return r, nil
 }
@@ -194,13 +195,13 @@ func trim(reader *bufio.Reader) (tagItemSlice, error) {
 		if err != nil {
 			clog.Fatal(err)
 		} else {
-			if item != nil && item.tag != TAG_COMMENT {
+			if item != nil && item.tag != tag_comment {
 				items.addTagItems(item)
 			}
 		}
 	}
 
-	if debug {
+	if dbg.True {
 		fmt.Println("----------------- after trim ---------------")
 		fmt.Println(items)
 	}
@@ -208,25 +209,25 @@ func trim(reader *bufio.Reader) (tagItemSlice, error) {
 	return items, nil
 }
 
-func parse(items tagItemSlice) (*regJar, error) {
-	var curReg *reg
-	jar := new(regJar)
+func parse(items tagItemSlice) (*Jar, error) {
+	var curReg *Reg
+	jar := new(Jar)
 	for _, item := range items {
 		switch item.tag {
-		case TAG_CHIP:
+		case tag_chip:
 			chip, err := processChip(item.data)
 			if err != nil {
 				return nil, err
 			}
-			jar.chip = chip
-		case TAG_REG:
+			jar.Chip = chip
+		case tag_reg:
 			r, err := processReg(item.data)
 			if err != nil {
 				return nil, err
 			}
 			jar.addRegs(r)
 			curReg = r
-		case TAG_FIELD:
+		case tag_field:
 			if curReg == nil {
 				clog.Fatal("Invalid Format: no <REG> at start")
 			}
@@ -238,7 +239,7 @@ func parse(items tagItemSlice) (*regJar, error) {
 		}
 	}
 
-	if debug {
+	if dbg.True {
 		fmt.Println("----------------- after parse ---------------")
 		fmt.Println(jar)
 	}
@@ -246,7 +247,7 @@ func parse(items tagItemSlice) (*regJar, error) {
 	return jar, nil
 }
 
-func newRegJar(filename string) (*regJar, error) {
+func New(filename string) (*Jar, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -259,7 +260,7 @@ func newRegJar(filename string) (*regJar, error) {
 		return nil, err
 	}
 
-	// tagItemSlice -> regJar
+	// tagItemSlice -> Jar
 	jar, err := parse(items)
 	if err != nil {
 		return nil, err
