@@ -1,12 +1,13 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/choueric/clog"
 	"github.com/choueric/regGen/dbg"
+	"github.com/choueric/regGen/fileflag"
 	"github.com/choueric/regGen/format"
 	"github.com/choueric/regGen/licenseload"
 	"github.com/choueric/regGen/regjar"
@@ -20,18 +21,25 @@ var (
 	BUILD_INFO  = ""
 )
 
-func init() {
-	flag.BoolVar(&dbg.True, "d", false, "enable debug")
-	flag.StringVar(&input, "i", "input.regs", "input file.")
-	flag.StringVar(&formatArg, "f", "cmacro", "output format type.")
-	flag.StringVar(&licenseFile, "l", "", "specify license file.")
-
-	defUsage := flag.Usage
-	flag.Usage = func() {
-		fmt.Println("version:", version, BUILD_INFO)
-		defUsage()
+func joinHomeDir(filepath string) string {
+	homeDir := os.Getenv("HOME")
+	if homeDir == "" {
+		clog.Fatal("$HOME is empty")
 	}
-	flag.Parse()
+	return path.Join(homeDir, filepath)
+}
+
+func init() {
+	ffPath := joinHomeDir(".regGen/flag")
+	ff := fileflag.New(ffPath)
+
+	ff.FlagSet().BoolVar(&dbg.True, "d", false, "enable debug")
+	ff.FlagSet().StringVar(&input, "i", "input.regs", "input file.")
+	ff.FlagSet().StringVar(&formatArg, "f", "cmacro", "output format type.")
+	ff.FlagSet().StringVar(&licenseFile, "l", "", "specify license file.")
+	if err := ff.Parse(); err != nil {
+		clog.Fatal(err)
+	}
 
 	if dbg.True {
 		clog.SetFlags(clog.Lshortfile | clog.Lcolor)
