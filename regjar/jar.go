@@ -85,7 +85,7 @@ func trim(reader *bufio.Reader) (tagItemSlice, error) {
 		if err != nil {
 			clog.Fatal(err)
 		} else {
-			if item != nil && item.tag != tag_comment {
+			if item != nil && item.tag != tag_comment && item.tag != tag_other {
 				items.addTagItems(item)
 			}
 		}

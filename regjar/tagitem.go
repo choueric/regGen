@@ -54,16 +54,7 @@ type tagItemSlice []*tagItem
 func (s tagItemSlice) String() string {
 	var str bytes.Buffer
 	for _, i := range s {
-		switch i.tag {
-		case tag_chip:
-			fmt.Fprintln(&str, "[  CHIP ]", i.data)
-		case tag_width:
-			fmt.Fprintln(&str, "[ WIDTH ]", i.data)
-		case tag_reg:
-			fmt.Fprintln(&str, "[  REG  ]", i.data)
-		case tag_field:
-			fmt.Fprintf(&str, "[ FIELD ] %s (%s)\n", i.data, i.enums)
-		}
+		fmt.Fprintln(&str, i)
 	}
 	return str.String()
 }

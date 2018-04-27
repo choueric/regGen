@@ -18,11 +18,11 @@ const (
 	// Trimmed String
 	trimedStr = `[  CHIP ] <chip>:si5324
 [  REG  ] <REG>[Control]: 0
-[ FIELD ] BYPASS_REG: 1 ()
-[ FIELD ] FREE_RUN: 7 - 6 ()
-[ FIELD ] ck_prior1 : 0-1 ()
+[ FIELD ] BYPASS_REG: 1
+[ FIELD ] FREE_RUN: 7 - 6
+[ FIELD ] ck_prior1 : 0-1
 [  REG  ] <REG>: 0x10
-[ FIELD ] BWSEL_REG: 4-7 ()
+[ FIELD ] BWSEL_REG: 4-7
 [  REG  ] <REG>[field_vals]: 0x11
 [ FIELD ] fos: 5-6 (0:fos_0, 3:fos_3)
 [ FIELD ] VALTIME: 4 -  3 (0b00:    0ms, 0b01:    1ms, 0b10: 2ms, 0b11: 3ms)
