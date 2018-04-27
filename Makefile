@@ -15,8 +15,11 @@ all:bin
 bin:
 	@go build -ldflags "$(X_ARGS)" -o $(EXEC)
 
-debug: bin
-	@./$(EXEC) -i chips/simple.regs -d | less
+simple: bin
+	@./$(EXEC) -i testdata/simple.regs -d | less
+
+complex: bin
+	@./$(EXEC) -i testdata/complex.regs -d | less
 
 install:$(EXEC)
 	install -d $(BIN)

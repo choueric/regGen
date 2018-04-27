@@ -1,0 +1,23 @@
+# This is a simple regs file
+<chip>:complexChip
+
+<module>[pll]: 0x30000000
+
+<REG>[Control]: 0
+	BYPASS: 1 (1: enable, 0: disable)
+	FREE_RUN: 7 - 6 
+
+<REG>: 0x2
+type: 4-5 (0b00: client, 0x01: server, 2: route, 3: peer)
+
+<module>[i2c]: 0x40000000
+
+<REG>[clock]: 0
+	enable: 0
+
+<REG>[data]: 1
+	data: 0-7
+
+<REG>[control]:2
+	start: 0  (1: start, 0: stop)
+	interupt: 1

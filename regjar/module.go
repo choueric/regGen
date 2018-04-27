@@ -3,18 +3,16 @@ package regjar
 import (
 	"bytes"
 	"fmt"
-	"strings"
-
-	"github.com/choueric/clog"
 )
 
 type Module struct {
-	Name string
-	Regs []*Reg
+	Name     string
+	BaseAddr uint64
+	Regs     []*Reg
 }
 
 func defaultModule() *Module {
-	return &Module{"default", make([]*Reg, 0)}
+	return &Module{"default", 0, make([]*Reg, 0)}
 }
 
 func (mod *Module) String() string {
@@ -31,11 +29,10 @@ func (mod *Module) addRegs(v ...*Reg) {
 }
 
 func processModule(line string) (*Module, error) {
-	strs := strings.Split(line, ":")
-	if len(strs) != 2 {
-		clog.Fatal("Invalid Format: [" + line + "]")
+	name, addr, err := parseTagNameOffset(line)
+	if err != nil {
+		return nil, err
 	}
 
-	name := strings.ToUpper(strings.TrimSpace(strs[1]))
-	return &Module{name, make([]*Reg, 0)}, nil
+	return &Module{name, addr, make([]*Reg, 0)}, nil
 }

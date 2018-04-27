@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/choueric/clog"
@@ -157,6 +158,29 @@ func parse(items tagItemSlice) (*Jar, error) {
 	}
 
 	return jar, nil
+}
+
+// for module and tag, like "<reg>[name]: offset"
+func parseTagNameOffset(line string) (name string, offset uint64, err error) {
+	strs := strings.Split(line, ":")
+	if len(strs) != 2 {
+		clog.Fatal("Invalid Format: [" + line + "]")
+	} else {
+		offset, err = strconv.ParseUint(strings.TrimSpace(strs[1]), 0, 64)
+		if err != nil {
+			clog.Error(line)
+			return "", 0, err
+		}
+	}
+
+	a := strings.IndexByte(line, '[')
+	b := strings.IndexByte(line, ']')
+	if a != -1 && b != -1 {
+		name = strings.ToUpper(strings.TrimSpace(line[a+1 : b]))
+	} else {
+		name = strconv.FormatUint(offset, 10)
+	}
+	return
 }
 
 func New(filename string) (*Jar, error) {

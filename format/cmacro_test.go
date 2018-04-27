@@ -3,7 +3,6 @@ package format_test
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -69,7 +68,7 @@ const formatCStr = `#pragma once
 	#define REG_LOCKT_MSK MASK(0, 2)
 	#define REG_LOCKT_VAL(rv) ((rv) & REG_LOCKT_MSK)
 	#define REG_LOCKT_SFT(v) ((v) & MASK(0, 2))
-		#define REG_LOCKT_0T	0	// 0b0		0x0
+		#define REG_LOCKT_0T	0	// 0b0	0x0
 		#define REG_LOCKT_5T	10	// 0b1010	0xa
 
 #define REG_18 0x12 // 18
@@ -104,7 +103,6 @@ func TestCMacrosFormat(t *testing.T) {
 	fmtter.FormatRegJar(&result, jar)
 	if strings.Compare(result.String(), formatCStr) != 0 {
 		goutils.PrintStringMismatch(result.Bytes(), []byte(formatCStr), dbg.True)
-		t.Error("parse fail!")
+		t.Fatal("parse fail!")
 	}
-	fmt.Println("ok")
 }
