@@ -15,23 +15,23 @@ import (
 )
 
 type Jar struct {
-	Chip  string
-	Width uint32
-	Regs  []*Reg
+	Chip    string
+	Width   uint32
+	Modules []*Module
 }
 
 func (jar *Jar) String() string {
 	var str bytes.Buffer
 	fmt.Fprintf(&str, "CHIP: \"%s\"\n", jar.Chip)
 	fmt.Fprintf(&str, "WIDTH: %d\n", jar.Width)
-	for _, r := range jar.Regs {
+	for _, r := range jar.Modules {
 		fmt.Fprint(&str, r)
 	}
 	return str.String()
 }
 
-func (jar *Jar) addRegs(v ...*Reg) {
-	jar.Regs = append(jar.Regs, v...)
+func (jar *Jar) addModule(v ...*Module) {
+	jar.Modules = append(jar.Modules, v...)
 }
 
 // create a new jar and setup default values
@@ -98,6 +98,7 @@ func trim(reader *bufio.Reader) (tagItemSlice, error) {
 
 func parse(items tagItemSlice) (*Jar, error) {
 	var curReg *Reg
+	var curMod *Module
 	jar := newJar()
 	for _, item := range items {
 		switch item.tag {
@@ -113,12 +114,26 @@ func parse(items tagItemSlice) (*Jar, error) {
 				return nil, err
 			}
 			jar.Width = width
+		case tag_module:
+			if curMod != nil && curMod.Name == "default" {
+				clog.Fatal("Default module is active and must be the only one.")
+			}
+			mod, err := processModule(item.data)
+			if err != nil {
+				return nil, err
+			}
+			jar.addModule(mod)
+			curMod = mod
 		case tag_reg:
+			if curMod == nil {
+				curMod = defaultModule()
+				jar.addModule(curMod)
+			}
 			r, err := processReg(item.data)
 			if err != nil {
 				return nil, err
 			}
-			jar.addRegs(r)
+			curMod.addRegs(r)
 			curReg = r
 		case tag_field:
 			if curReg == nil {

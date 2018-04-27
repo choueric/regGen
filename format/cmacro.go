@@ -24,17 +24,19 @@ func (fmtter *cmacroFormat) FormatLicense(w io.Writer, license string) {
 func (fmtter *cmacroFormat) FormatRegJar(w io.Writer, jar *regjar.Jar) {
 	tw := tabwriter.NewWriter(w, 0, 4, 1, '\t', 0)
 	fmtter.formatBanner(tw, jar)
-	for _, r := range jar.Regs {
-		fmtter.formatReg(tw, r)
-		for _, f := range r.Fields {
-			name := strings.ToUpper(f.Name)
-			if f.Start == f.End {
-				fmtter.formatBitField(tw, f, name)
-			} else {
-				fmtter.formatRangeField(tw, f, name)
+	for _, mod := range jar.Modules {
+		for _, r := range mod.Regs {
+			fmtter.formatReg(tw, r)
+			for _, f := range r.Fields {
+				name := strings.ToUpper(f.Name)
+				if f.Start == f.End {
+					fmtter.formatBitField(tw, f, name)
+				} else {
+					fmtter.formatRangeField(tw, f, name)
+				}
+				fmtter.formatEnums(tw, f, name)
+				tw.Flush()
 			}
-			fmtter.formatEnums(tw, f, name)
-			tw.Flush()
 		}
 	}
 	tw.Flush()

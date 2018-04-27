@@ -13,6 +13,7 @@ import (
 const (
 	tag_chip = iota
 	tag_width
+	tag_module
 	tag_reg
 	tag_field
 	tag_comment
@@ -31,6 +32,8 @@ func (item *tagItem) String() string {
 		return fmt.Sprintf("[  CHIP ] %s", item.data)
 	case tag_width:
 		return fmt.Sprintf("[ WIDTH ] %s", item.data)
+	case tag_module:
+		return fmt.Sprintf("[  MOD  ] %s", item.data)
 	case tag_reg:
 		return fmt.Sprintf("[  REG  ] %s", item.data)
 	case tag_comment:
@@ -89,6 +92,8 @@ func parseTagItem(line string) *tagItem {
 		return &tagItem{tag: tag_chip, data: sLine}
 	} else if strings.Contains(tagStr, "<WIDTH>") {
 		return &tagItem{tag: tag_width, data: sLine}
+	} else if strings.Contains(tagStr, "<MODULE>") {
+		return &tagItem{tag: tag_module, data: sLine}
 	} else if strings.Contains(tagStr, "<REG>") {
 		return &tagItem{tag: tag_reg, data: sLine}
 	} else {
