@@ -95,7 +95,7 @@ func TestCMacrosFormat(t *testing.T) {
 		clog.Fatal(err)
 	}
 
-	jar, err := regjar.New("../chips/test.regs")
+	jar, err := regjar.New("../testdata/test.regs")
 	if err != nil {
 		clog.Fatal(err)
 	}

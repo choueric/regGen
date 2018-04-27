@@ -54,7 +54,7 @@ var (
 )
 
 func init() {
-	data, err := ioutil.ReadFile("../chips/test.regs")
+	data, err := ioutil.ReadFile("../testdata/test.regs")
 	if err != nil {
 		clog.Fatal(err)
 	}

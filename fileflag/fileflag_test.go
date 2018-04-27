@@ -12,6 +12,7 @@ func TestParse(t *testing.T) {
 		formatArg   string
 		licenseFile string
 	)
+	os.Args = []string{"fileflag.test"} // clear cmdline argH
 	ff := New("../testdata/fileflag_test.conf")
 	ff.FlagSet().BoolVar(&debug, "d", false, "enable debug")
 	ff.FlagSet().StringVar(&input, "i", "input.regs", "input file.")
@@ -19,20 +20,20 @@ func TestParse(t *testing.T) {
 	ff.FlagSet().StringVar(&licenseFile, "l", "", "specify license file.")
 
 	if err := ff.Parse(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if debug != true {
-		t.Error("debug dosen't match.")
+		t.Fatal("debug dosen't match.")
 	}
 	if input != "../chips/simple.regs" {
-		t.Error("input dosen't match.")
+		t.Fatal("input dosen't match.")
 	}
 	if formatArg != "cmacro" {
-		t.Error("output format dosen't match.")
+		t.Fatal("output format dosen't match.")
 	}
 	if licenseFile != "../LICENSE" {
-		t.Error("license file dosen't match.")
+		t.Fatal("license file dosen't match.")
 	}
 }
 
@@ -51,19 +52,19 @@ func TestParseCmdArgs(t *testing.T) {
 
 	os.Args = []string{"test", "-d", "-i", "../chips/simple.regs", "-l", "../LICENSE"}
 	if err := ff.Parse(); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if debug != true {
-		t.Error("debug dosen't match.")
+		t.Fatal("debug dosen't match.")
 	}
 	if input != "../chips/simple.regs" {
-		t.Error("input dosen't match.")
+		t.Fatal("input dosen't match.")
 	}
 	if formatArg != "cmacro" {
-		t.Error("output format dosen't match.")
+		t.Fatal("output format dosen't match.")
 	}
 	if licenseFile != "../LICENSE" {
-		t.Error("license file dosen't match.")
+		t.Fatal("license file dosen't match.")
 	}
 }
