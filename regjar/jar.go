@@ -25,10 +25,7 @@ func (jar *Jar) String() string {
 	fmt.Fprintf(&str, "CHIP: \"%s\"\n", jar.Chip)
 	fmt.Fprintf(&str, "WIDTH: %d\n", jar.Width)
 	for _, r := range jar.Regs {
-		fmt.Fprintln(&str, r)
-		for _, f := range r.Fields {
-			fmt.Fprintln(&str, "   ", f)
-		}
+		fmt.Fprint(&str, r)
 	}
 	return str.String()
 }

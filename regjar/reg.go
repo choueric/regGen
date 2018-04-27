@@ -1,6 +1,7 @@
 package regjar
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -15,7 +16,12 @@ type Reg struct {
 }
 
 func (r *Reg) String() string {
-	return fmt.Sprintf("\"%s\", %#x", r.Name, r.Offset)
+	var str bytes.Buffer
+	fmt.Fprintf(&str, "\"%s\", %#x\n", r.Name, r.Offset)
+	for _, f := range r.Fields {
+		fmt.Fprintln(&str, "   ", f)
+	}
+	return str.String()
 }
 
 func (r *Reg) addFileds(f ...*Field) {
