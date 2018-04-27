@@ -62,7 +62,7 @@ func processFiledNameOffset(f *Field, nameOffset string) error {
 		return errors.New("Invalid Format: " + nameOffset)
 	}
 
-	f.Name = strings.TrimSpace(strs[0])
+	f.Name = strings.ToUpper(strings.TrimSpace(strs[0]))
 	offsetStr := strings.TrimSpace(strs[1])
 	strs = strings.Split(offsetStr, "-")
 	if len(strs) == 1 {
@@ -126,7 +126,7 @@ func processFiledEnums(f *Field, enumStr string) error {
 		if v, err := goutils.ParseUint(valStrs[i], 32); err != nil {
 		} else {
 			f.EnumVals = append(f.EnumVals, uint32(v))
-			f.EnumNames = append(f.EnumNames, ns)
+			f.EnumNames = append(f.EnumNames, strings.ToUpper(ns))
 		}
 	}
 

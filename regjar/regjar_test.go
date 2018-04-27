@@ -33,18 +33,19 @@ const (
 	// Parsed String
 	parsedStr = `CHIP: "si5324"
 WIDTH: 8
-"Control", 0x0
+MODULE: "default"
+"CONTROL", 0x0
     BYPASS_REG: [1:1] ()
     FREE_RUN: [6:7] ()
-    ck_prior1: [0:1] ()
+    CK_PRIOR1: [0:1] ()
 "16", 0x10
     BWSEL_REG: [4:7] ()
-"field_vals", 0x11
-    fos: [5:6] (0: fos_0, 3: fos_3, )
-    VALTIME: [3:4] (0: 0ms, 1: 1ms, 2: 2ms, 3: 3ms, )
-    lockt: [0:2] (0: 0t, 10: 5t, )
+"FIELD_VALS", 0x11
+    FOS: [5:6] (0: FOS_0, 3: FOS_3, )
+    VALTIME: [3:4] (0: 0MS, 1: 1MS, 2: 2MS, 3: 3MS, )
+    LOCKT: [0:2] (0: 0T, 10: 5T, )
 "18", 0x12
-    single: [2:3] (2: two, )
+    SINGLE: [2:3] (2: TWO, )
 `
 )
 

@@ -45,7 +45,7 @@ func processReg(line string) (*Reg, error) {
 	a := strings.IndexByte(line, '[')
 	b := strings.IndexByte(line, ']')
 	if a != -1 && b != -1 {
-		r.Name = strings.TrimSpace(line[a+1 : b])
+		r.Name = strings.ToUpper(strings.TrimSpace(line[a+1 : b]))
 	} else {
 		r.Name = strconv.FormatUint(r.Offset, 10)
 	}

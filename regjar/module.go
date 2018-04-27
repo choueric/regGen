@@ -36,5 +36,6 @@ func processModule(line string) (*Module, error) {
 		clog.Fatal("Invalid Format: [" + line + "]")
 	}
 
-	return &Module{strings.TrimSpace(strs[1]), make([]*Reg, 0)}, nil
+	name := strings.ToUpper(strings.TrimSpace(strs[1]))
+	return &Module{name, make([]*Reg, 0)}, nil
 }
