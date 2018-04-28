@@ -1,11 +1,3 @@
-# license banner
-
-Read license banner via:
-1) `license` in configuration directory, or
-2) `-l` option to specify a license file
-
-And add it into the header file.
-
 # .svd input format
 
 Accept .svd as input format
@@ -47,13 +39,14 @@ typedef struct {
   __IO uint32_t  RELOAD[4];                         
 } TIMER0_Type;
 ```
+# line number
 
-# bit width
-Add `bitwidth` keyword, for 8, 16 and 32 bit registers.
+Store line number and show them when the .regs format is invalid.
 
-# module
+# DONE
 
-Add `module` keyword for peripheral module in one chip.
-
-- `<module_name>_BASE_ADDRESS`: Definition of base address of a peripheral module.
-- `REG_<module_name>_<register_name>`: Definition of register address.
+- bit width
+- license banner
+- file flag
+- module
+- full-length macro

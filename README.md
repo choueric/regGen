@@ -191,3 +191,42 @@ some are not. The common macros are:
 	  for `3-4`.
 	- `REG_XXX_SFT(v)`: it shifts the field's value `v` to the correct offset.
 	  For example, `REG_XXX_SFT(1) = 0x08` for `3-4`.
+	  
+# short  pattern
+simple chip:
+
+```txt
+REG: REG_<reg>
+FLD:	REG_<field>
+ENU:		REG_<filed>_<enum>
+```
+
+complex chip with module:
+
+```txt
+//////////////////////////////////////////////
+// <module>
+MOD: REG_<module>_BASE_ADDR 0x0000000
+REG: REG_<module>_<reg>
+FLD: 	REG_<module>_<field>
+ENM: 		REG_<module>_<filed>_<enum>
+```
+
+# full pattern:
+simple chip:
+```txt
+REG: REG_<reg>
+FLD:	REG_<reg>_<field>
+ENU:		REG_<reg>_<filed>_<enum>
+```
+
+complex chip with module:
+
+```txt
+//////////////////////////////////////////////
+// <module>
+MOD: REG_<module>_BASE_ADDR 0x0000000
+REG: REG_<module>_<reg>
+FLD:	REG_<module>_<reg>_<field>
+ENM:		REG_<module>_<reg>_<filed>_<enum>
+```
