@@ -21,7 +21,7 @@ func (fmtter *cmacroFormat) FormatLicense(w io.Writer, license string) {
 	fmt.Fprintf(w, "\n")
 }
 
-func (fmtter *cmacroFormat) FormatRegJar(w io.Writer, jar *regjar.Jar) {
+func (fmtter *cmacroFormat) FormatRegJar(w io.Writer, jar *regjar.Jar, isFull bool) {
 	if len(jar.Modules) == 0 {
 		clog.Fatal("Empty modules in jar\n")
 	}
@@ -31,7 +31,7 @@ func (fmtter *cmacroFormat) FormatRegJar(w io.Writer, jar *regjar.Jar) {
 	if len(jar.Modules) == 1 && jar.Modules[0].Name == "default" {
 		for _, r := range jar.Modules[0].Regs {
 			prefix := "#define REG"
-			fmtter.formatReg(w, r, prefix)
+			fmtter.formatReg(w, r, prefix, isFull)
 			tw.Flush()
 		}
 	} else {
@@ -40,7 +40,7 @@ func (fmtter *cmacroFormat) FormatRegJar(w io.Writer, jar *regjar.Jar) {
 			fmtter.formatModule(tw, mod, prefix)
 			prefix = fmt.Sprintf("%s_%s", prefix, mod.Name)
 			for _, r := range mod.Regs {
-				fmtter.formatReg(w, r, prefix)
+				fmtter.formatReg(w, r, prefix, isFull)
 			}
 			tw.Flush()
 		}
@@ -73,11 +73,16 @@ func (fmtter *cmacroFormat) formatModule(w io.Writer, m *regjar.Module, prefix s
 	fmt.Fprintf(w, "%s_%s_BASE_ADDR 0x%08x\n", prefix, m.Name, m.BaseAddr)
 }
 
-func (fmtter *cmacroFormat) formatReg(w io.Writer, r *regjar.Reg, prefix string) {
+func (fmtter *cmacroFormat) formatReg(w io.Writer, r *regjar.Reg, prefix string, isFull bool) {
 	fmt.Fprintf(w, "\n")
 	fmt.Fprintf(w, prefix+"_%s %#x // %d\n", r.Name, r.Offset, r.Offset)
+	if isFull {
+		prefix = fmt.Sprintf("\t%s_%s", prefix, r.Name)
+	} else {
+		prefix = "\t" + prefix
+	}
 	for _, f := range r.Fields {
-		fmtter.formatField(w, f, "\t"+prefix)
+		fmtter.formatField(w, f, prefix)
 	}
 }
 

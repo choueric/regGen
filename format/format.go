@@ -9,7 +9,7 @@ import (
 
 type Formatter interface {
 	FormatLicense(w io.Writer, license string)
-	FormatRegJar(w io.Writer, jar *regjar.Jar)
+	FormatRegJar(w io.Writer, jar *regjar.Jar, isFull bool)
 }
 
 func New(fmt string) (Formatter, error) {

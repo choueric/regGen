@@ -17,6 +17,7 @@ var (
 	inputArg       string
 	formatArg      string
 	showVersionArg bool
+	isFullArg      bool
 	licenseFile    string
 	version        = "0.0.4"
 	BUILD_INFO     = ""
@@ -39,6 +40,7 @@ func init() {
 	ff.FlagSet().StringVar(&inputArg, "i", "input.regs", "input file.")
 	ff.FlagSet().StringVar(&formatArg, "f", "cmacro", "output format type.")
 	ff.FlagSet().StringVar(&licenseFile, "l", "", "specify license file.")
+	ff.FlagSet().BoolVar(&isFullArg, "full", false, "full format output")
 	if err := ff.Parse(); err != nil {
 		clog.Fatal(err)
 	}
@@ -73,6 +75,7 @@ func main() {
 	if dbg.True {
 		fmt.Println("----------------- format output ---------------")
 	}
+
 	fmtter.FormatLicense(os.Stdout, license)
-	fmtter.FormatRegJar(os.Stdout, jar)
+	fmtter.FormatRegJar(os.Stdout, jar, isFullArg)
 }

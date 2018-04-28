@@ -100,7 +100,7 @@ func TestCMacrosFormat(t *testing.T) {
 	}
 
 	var result bytes.Buffer
-	fmtter.FormatRegJar(&result, jar)
+	fmtter.FormatRegJar(&result, jar, false)
 	if strings.Compare(result.String(), formatCStr) != 0 {
 		goutils.PrintStringMismatch(result.Bytes(), []byte(formatCStr), dbg.True)
 		t.Fatal("parse fail!")
