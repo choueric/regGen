@@ -55,11 +55,12 @@ func (fmtter *cmacroFormat) formatBanner(w io.Writer, jar *regjar.Jar) {
 #define BIT(x) (1 << (x))
 #endif
 
-// ONLY for _8bit-width_ register
-#define MASK(a, b) (((uint8_t)-1 >> (7-(b))) & ~((1U<<(a))-1))
 `
-
+	const mskFmt = "#define MASK(a, b) (((uint%d_t)-1 >> (%d-(b))) & ~((1U<<(a))-1))\n"
 	fmt.Fprintf(w, cHeader)
+	fmt.Fprintf(w, "// ONLY for _%dbit-width_ register\n", jar.Width)
+	fmt.Fprintf(w, mskFmt, jar.Width, jar.Width-1)
+
 	if jar.Chip != "" {
 		fmt.Fprintf(w, "\n// Registers of %s\n", jar.Chip)
 	}

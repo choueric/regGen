@@ -18,8 +18,8 @@ const cmacroCmplx = `#pragma once
 #define BIT(x) (1 << (x))
 #endif
 
-// ONLY for _8bit-width_ register
-#define MASK(a, b) (((uint8_t)-1 >> (7-(b))) & ~((1U<<(a))-1))
+// ONLY for _32bit-width_ register
+#define MASK(a, b) (((uint32_t)-1 >> (31-(b))) & ~((1U<<(a))-1))
 
 // Registers of complexChip
 

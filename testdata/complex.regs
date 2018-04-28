@@ -1,5 +1,6 @@
 # This is a complex regs file
 <chip>:complexChip
+<width>:32
 
 # PLL module
 <module>[pll]: 0x30000000

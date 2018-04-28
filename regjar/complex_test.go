@@ -16,6 +16,7 @@ import (
 const (
 	// Trimmed String
 	cmplxTrimStr = `[  CHIP ] <chip>:complexChip
+[ WIDTH ] <width>:32
 [  MOD  ] <module>[pll]: 0x30000000
 [  REG  ] <REG>[Control]: 0
 [ FIELD ] BYPASS: 1 (1: enable, 0: disable)
@@ -33,7 +34,7 @@ const (
 `
 	// Parsed String
 	cmplxParseStr = `CHIP: "complexChip"
-WIDTH: 8
+WIDTH: 32
 MODULE: "PLL"
 "CONTROL", 0x0
     BYPASS: [1:1] (1: ENABLE, 0: DISABLE, )
