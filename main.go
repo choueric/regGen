@@ -14,11 +14,12 @@ import (
 )
 
 var (
-	input       string
-	formatArg   string
-	licenseFile string
-	version     = "0.0.4"
-	BUILD_INFO  = ""
+	inputArg       string
+	formatArg      string
+	showVersionArg bool
+	licenseFile    string
+	version        = "0.0.4"
+	BUILD_INFO     = ""
 )
 
 func joinHomeDir(filepath string) string {
@@ -34,16 +35,22 @@ func init() {
 	ff := fileflag.New(ffPath)
 
 	ff.FlagSet().BoolVar(&dbg.True, "d", false, "enable debug")
-	ff.FlagSet().StringVar(&input, "i", "input.regs", "input file.")
+	ff.FlagSet().BoolVar(&showVersionArg, "v", false, "show version.")
+	ff.FlagSet().StringVar(&inputArg, "i", "input.regs", "input file.")
 	ff.FlagSet().StringVar(&formatArg, "f", "cmacro", "output format type.")
 	ff.FlagSet().StringVar(&licenseFile, "l", "", "specify license file.")
 	if err := ff.Parse(); err != nil {
 		clog.Fatal(err)
 	}
 
+	if showVersionArg {
+		fmt.Println("version:", version, BUILD_INFO)
+		os.Exit(0)
+	}
+
 	if dbg.True {
 		clog.SetFlags(clog.Lshortfile | clog.Lcolor)
-		clog.Println(input)
+		clog.Println(inputArg)
 	}
 }
 
@@ -58,7 +65,7 @@ func main() {
 		clog.Fatal(err)
 	}
 
-	jar, err := regjar.New(input)
+	jar, err := regjar.New(inputArg)
 	if err != nil {
 		clog.Fatal(err)
 	}
