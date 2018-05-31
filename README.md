@@ -1,5 +1,7 @@
 # regGen
 
+[![Build Status](https://travis-ci.org/choueric/regGen.svg?branch=master)](https://travis-ci.org/choueric/kbdashboard)
+
 It is a tool written in Golang to automatically generate code of registers and
 fields in registers of a chip by reading a register-description file.
 
